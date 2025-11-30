@@ -34,7 +34,7 @@ export const EMOTIONS: Emotion[] = [
   { valence: -1, arousal: 1, label: 'Tired', emoji: '😴', color: 'blue' },
   { valence: -2, arousal: 3, label: 'Melancholy', emoji: '😞', color: 'blue' },
   { valence: -1, arousal: 3, label: 'Lonely', emoji: '😕', color: 'blue' },
-  { valence: -1, arousal: 0, label: 'Exhausted', emoji: '😫', color: 'blue' },
+  { valence: -1, arousal: 1, label: 'Exhausted', emoji: '😫', color: 'blue' },
   
   // Neutral (Gray)
   { valence: 0, arousal: 3, label: 'Neutral', emoji: '😐', color: 'gray' },
