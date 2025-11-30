@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, startOfWeek, endOfWeek, eachWeekOfInterval } from 'date-fns'
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, startOfWeek, endOfWeek } from 'date-fns'
 import { Calendar as CalendarIcon, Filter } from 'lucide-react'
 import { MoodEntry, StressEntry, SleepEntry, AppetiteEntry, CalendarView, CalendarFilter } from '../types'
 import { getColorClasses } from '../utils/emotions'
@@ -26,15 +26,15 @@ const Calendar = ({ moodEntries, stressEntries, sleepEntries, appetiteEntries }:
   const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd })
 
   const firstDayOfWeek = monthStart.getDay()
-  const paddingDays = Array.from({ length: firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1 }, (_, i) => null)
+  const paddingDays = Array.from({ length: firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1 }, () => null)
 
   const getDayData = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd')
     return {
-      mood: moodEntries.find(e => isSameDay(new Date(e.date), date)),
-      stress: stressEntries.find(e => isSameDay(new Date(e.date), date)),
-      sleep: sleepEntries.find(e => isSameDay(new Date(e.date), date)),
-      appetite: appetiteEntries.find(e => isSameDay(new Date(e.date), date)),
+      mood: moodEntries.find(e => e.date === dateStr),
+      stress: stressEntries.find(e => e.date === dateStr),
+      sleep: sleepEntries.find(e => e.date === dateStr),
+      appetite: appetiteEntries.find(e => e.date === dateStr),
     }
   }
 
@@ -150,7 +150,6 @@ const Calendar = ({ moodEntries, stressEntries, sleepEntries, appetiteEntries }:
             const isToday = isSameDay(day, today)
             const isCurrentMonth = view === 'weekly' || isSameMonth(day, selectedDate)
             const dayData = getDayData(day)
-            const hasData = dayData.mood || dayData.stress || dayData.sleep || dayData.appetite
 
             const showMood = (filter === 'all' || filter === 'mood') && dayData.mood
             const showStress = (filter === 'all' || filter === 'stress') && dayData.stress
