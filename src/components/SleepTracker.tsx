@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { format, isSameDay } from 'date-fns'
+import { format } from 'date-fns'
 import { Moon, Plus, Edit2 } from 'lucide-react'
 import { SleepEntry } from '../types'
 
