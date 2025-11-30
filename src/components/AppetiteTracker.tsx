@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { format, isSameDay } from 'date-fns'
+import { format } from 'date-fns'
 import { UtensilsCrossed, Plus, Droplet, Trash2, Edit2 } from 'lucide-react'
 import { AppetiteEntry, MealEntry } from '../types'
 
