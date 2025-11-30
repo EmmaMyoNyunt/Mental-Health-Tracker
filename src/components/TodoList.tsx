@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { format } from 'date-fns'
-import { CheckCircle2, Circle, Plus, Trash2, Star, StarOff, ArrowRight } from 'lucide-react'
+import { CheckCircle2, Circle, Plus, Trash2, Star, StarOff } from 'lucide-react'
 import { TodoTask } from '../types'
 
 interface TodoListProps {
