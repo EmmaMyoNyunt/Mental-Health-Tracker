@@ -13,7 +13,6 @@ interface MindfulTipsProps {
 
 const MindfulTips = ({ moodEntries, stressEntries, appetiteEntries, sleepEntries, journalEntries }: MindfulTipsProps) => {
   const today = new Date()
-  const todayStr = format(today, 'yyyy-MM-dd')
 
   const todayMood = moodEntries.find(e => isSameDay(new Date(e.date), today))
   const todayStress = stressEntries.find(e => isSameDay(new Date(e.date), today))
@@ -120,8 +119,6 @@ const MindfulTips = ({ moodEntries, stressEntries, appetiteEntries, sleepEntries
 
     return tipsList
   }, [todayMood, todayStress, todayAppetite, todaySleep, todayJournal])
-
-  const hasData = todayMood || todayStress || todayAppetite || todaySleep || todayJournal
 
   return (
     <div className="space-y-6 animate-fade-in">
