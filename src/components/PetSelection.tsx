@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Heart, Sparkles } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { usePet } from '../contexts/PetContext'
 import { PetType } from '../types'
 

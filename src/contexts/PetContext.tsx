@@ -36,7 +36,7 @@ export const PetProvider = ({ children }: { children: ReactNode }) => {
   }
 
   // Pet is only considered selected if both type and name are set
-  const hasSelectedPet = preferences.petType !== null && preferences.petName !== null && preferences.petName.trim() !== ''
+  const hasSelectedPet = preferences.petType !== null && preferences.petName !== null && preferences.petName !== undefined && preferences.petName.trim() !== ''
 
   return (
     <PetContext.Provider value={{ preferences, setPetType, setPetName, hasSelectedPet }}>
