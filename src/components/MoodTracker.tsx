@@ -22,7 +22,7 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
   const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd })
 
   const firstDayOfWeek = monthStart.getDay()
-  const paddingDays = Array.from({ length: firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1 }, (_, i) => null)
+  const paddingDays = Array.from({ length: firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1 }, () => null)
 
   const emotionsByColor = getEmotionsByColor()
 
