@@ -12,7 +12,7 @@ interface InsightsProps {
   sleepEntries: SleepEntry[]
 }
 
-const Insights = ({ moodEntries, journalEntries, stressEntries, appetiteEntries, sleepEntries }: InsightsProps) => {
+const Insights = ({ moodEntries, journalEntries, stressEntries: _stressEntries, appetiteEntries: _appetiteEntries, sleepEntries: _sleepEntries }: InsightsProps) => {
   const last30Days = useMemo(() => {
     const days = []
     for (let i = 29; i >= 0; i--) {
