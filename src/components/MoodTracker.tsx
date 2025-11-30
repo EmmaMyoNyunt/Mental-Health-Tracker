@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth } from 'date-fns'
-import { Heart, Plus } from 'lucide-react'
-import { MoodEntry, MoodLevel } from '../types'
+import { Heart, Plus, X } from 'lucide-react'
+import { MoodEntry } from '../types'
+import { EMOTIONS, getEmotionsByColor, getColorClasses, getEmotionById } from '../utils/emotions'
 
 interface MoodTrackerProps {
   moodEntries: MoodEntry[]
@@ -11,32 +12,44 @@ interface MoodTrackerProps {
 const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [showModal, setShowModal] = useState(false)
-  const [selectedMood, setSelectedMood] = useState<MoodLevel | null>(null)
+  const [selectedEmotionIds, setSelectedEmotionIds] = useState<string[]>([])
   const [notes, setNotes] = useState('')
+  const [selectedColor, setSelectedColor] = useState<'yellow' | 'red' | 'green' | 'blue' | 'gray' | null>(null)
 
   const today = new Date()
   const monthStart = startOfMonth(selectedDate)
   const monthEnd = endOfMonth(selectedDate)
   const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd })
 
-  // Add padding days for calendar grid
   const firstDayOfWeek = monthStart.getDay()
   const paddingDays = Array.from({ length: firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1 }, (_, i) => null)
 
-  const handleMoodSelect = (mood: MoodLevel) => {
-    setSelectedMood(mood)
-  }
+  const emotionsByColor = getEmotionsByColor()
 
   const handleSave = () => {
-    if (!selectedMood) return
+    if (selectedEmotionIds.length === 0) return
+
+    const emotions = selectedEmotionIds
+      .map(id => getEmotionById(id))
+      .filter((e): e is NonNullable<typeof e> => e !== undefined)
+
+    if (emotions.length === 0) return
 
     const dateStr = format(selectedDate, 'yyyy-MM-dd')
     const existingIndex = moodEntries.findIndex(e => e.date === dateStr)
 
+    // For backward compatibility, set primary emotion
+    const primaryEmotion = emotions[0]
+
     const newEntry: MoodEntry = {
       id: existingIndex >= 0 ? moodEntries[existingIndex].id : crypto.randomUUID(),
       date: dateStr,
-      mood: selectedMood,
+      valence: primaryEmotion.valence,
+      arousal: primaryEmotion.arousal,
+      emotion: primaryEmotion, // Primary for backward compatibility
+      emotionId: selectedEmotionIds[0],
+      emotions, // Array of up to 2 emotions
+      emotionIds: selectedEmotionIds,
       notes: notes.trim() || undefined,
     }
 
@@ -47,7 +60,8 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
     }
 
     setShowModal(false)
-    setSelectedMood(null)
+    setSelectedEmotionIds([])
+    setSelectedColor(null)
     setNotes('')
   }
 
@@ -55,38 +69,41 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
     return moodEntries.find(e => isSameDay(new Date(e.date), date))
   }
 
-  const moodColors: Record<MoodLevel, string> = {
-    1: 'bg-red-200 text-red-700 border-red-300',
-    2: 'bg-orange-200 text-orange-700 border-orange-300',
-    3: 'bg-yellow-200 text-yellow-700 border-yellow-300',
-    4: 'bg-green-200 text-green-700 border-green-300',
-    5: 'bg-emerald-200 text-emerald-700 border-emerald-300',
+  const handleEmotionSelect = (emotionId: string) => {
+    if (selectedEmotionIds.includes(emotionId)) {
+      // Remove if already selected
+      setSelectedEmotionIds(prev => prev.filter(id => id !== emotionId))
+    } else if (selectedEmotionIds.length < 2) {
+      // Add if less than 2 selected
+      setSelectedEmotionIds(prev => [...prev, emotionId])
+      const emotion = getEmotionById(emotionId)
+      if (emotion && !selectedColor) {
+        setSelectedColor(emotion.color || null)
+      }
+    }
   }
 
-  const moodLabels: Record<MoodLevel, string> = {
-    1: 'Poor',
-    2: 'Not Great',
-    3: 'Okay',
-    4: 'Good',
-    5: 'Excellent',
+  const handleRemoveEmotion = (emotionId: string) => {
+    setSelectedEmotionIds(prev => prev.filter(id => id !== emotionId))
   }
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-3">
-            <Heart className="text-primary-600" size={32} />
+          <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-3">
+            <span className="text-4xl">😊</span>
+            <Heart className="text-primary-600 dark:text-primary-400" size={32} />
             Mood Tracker
           </h2>
-          <p className="text-gray-600">Track your daily mood and emotions</p>
+          <p className="text-gray-600 dark:text-gray-300">Select up to 2 emotions to describe how you're feeling</p>
         </div>
         <button
           onClick={() => {
             setSelectedDate(new Date())
             setShowModal(true)
           }}
-          className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+          className="flex items-center gap-2 px-6 py-3 bg-primary-600 dark:bg-primary-500 text-white rounded-xl hover:bg-primary-700 dark:hover:bg-primary-600 transition-all duration-200 shadow-lg hover:shadow-xl"
         >
           <Plus size={20} />
           Add Mood
@@ -96,25 +113,25 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
       {/* Calendar */}
       <div className="glass-effect rounded-2xl p-6 card-hover">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-gray-800">
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
             {format(selectedDate, 'MMMM yyyy')}
           </h3>
           <div className="flex gap-2">
             <button
               onClick={() => setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1))}
-              className="px-4 py-2 text-gray-600 hover:bg-soft-lavender/50 rounded-lg transition-colors"
+              className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-soft-lavender/50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
             >
               ←
             </button>
             <button
               onClick={() => setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1))}
-              className="px-4 py-2 text-gray-600 hover:bg-soft-lavender/50 rounded-lg transition-colors"
+              className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-soft-lavender/50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
             >
               →
             </button>
             <button
               onClick={() => setSelectedDate(today)}
-              className="px-4 py-2 text-primary-600 hover:bg-primary-100 rounded-lg transition-colors"
+              className="px-4 py-2 text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded-lg transition-colors"
             >
               Today
             </button>
@@ -123,7 +140,7 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
 
         <div className="grid grid-cols-7 gap-2">
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-            <div key={day} className="text-center text-sm font-semibold text-gray-600 py-2">
+            <div key={day} className="text-center text-sm font-semibold text-gray-600 dark:text-gray-300 py-2">
               {day}
             </div>
           ))}
@@ -135,6 +152,9 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
             const isToday = isSameDay(day, today)
             const isCurrentMonth = isSameMonth(day, selectedDate)
             
+            // Get emotions to display (support both old and new format)
+            const displayEmotions = entry?.emotions || (entry?.emotion ? [entry.emotion] : [])
+            
             return (
               <button
                 key={day.toISOString()}
@@ -142,17 +162,20 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
                   setSelectedDate(day)
                   setShowModal(true)
                   if (entry) {
-                    setSelectedMood(entry.mood)
+                    const emotionIds = entry.emotionIds || (entry.emotionId ? [entry.emotionId] : [])
+                    setSelectedEmotionIds(emotionIds)
+                    setSelectedColor(displayEmotions[0]?.color || null)
                     setNotes(entry.notes || '')
                   } else {
-                    setSelectedMood(null)
+                    setSelectedEmotionIds([])
+                    setSelectedColor(null)
                     setNotes('')
                   }
                 }}
                 className={`relative p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
-                  entry
-                    ? `${moodColors[entry.mood]} border-2`
-                    : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
+                  entry && displayEmotions.length > 0
+                    ? `${getColorClasses(displayEmotions[0].color || 'gray')} border-2`
+                    : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border-2 border-transparent'
                 } ${isToday ? 'ring-2 ring-primary-400' : ''} ${
                   !isCurrentMonth ? 'opacity-40' : ''
                 }`}
@@ -160,8 +183,12 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
                 <span className={`text-sm font-medium ${isToday ? 'font-bold' : ''}`}>
                   {format(day, 'd')}
                 </span>
-                {entry && (
-                  <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-current rounded-full" />
+                {displayEmotions.length > 0 && (
+                  <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-0.5">
+                    {displayEmotions.slice(0, 2).map((em, idx) => (
+                      <span key={idx} className="text-xs">{em.emoji}</span>
+                    ))}
+                  </div>
                 )}
               </button>
             )
@@ -169,55 +196,103 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
         </div>
       </div>
 
-      {/* Mood Legend */}
-      <div className="glass-effect rounded-2xl p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Mood Scale</h3>
-        <div className="grid grid-cols-5 gap-4">
-          {([1, 2, 3, 4, 5] as MoodLevel[]).map(mood => (
-            <div key={mood} className="text-center">
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-2 font-bold text-lg ${moodColors[mood]}`}>
-                {mood}
-              </div>
-              <p className="text-sm text-gray-600">{moodLabels[mood]}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 animate-scale-in shadow-2xl">
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-scale-in shadow-2xl">
+            <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">
               {format(selectedDate, 'EEEE, MMMM d, yyyy')}
             </h3>
-            <p className="text-gray-600 mb-6">How are you feeling today?</p>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">Select up to 2 emotions to describe how you're feeling:</p>
 
-            <div className="grid grid-cols-5 gap-3 mb-6">
-              {([1, 2, 3, 4, 5] as MoodLevel[]).map(mood => (
+            {/* Selected Emotions Display */}
+            {selectedEmotionIds.length > 0 && (
+              <div className="mb-6 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 font-medium">Selected Emotions ({selectedEmotionIds.length}/2):</p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedEmotionIds.map(emotionId => {
+                    const emotion = getEmotionById(emotionId)
+                    if (!emotion) return null
+                    return (
+                      <div
+                        key={emotionId}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg ${getColorClasses(emotion.color || 'gray')}`}
+                      >
+                        <span className="text-xl">{emotion.emoji}</span>
+                        <span className="font-semibold">{emotion.label}</span>
+                        <button
+                          onClick={() => handleRemoveEmotion(emotionId)}
+                          className="ml-2 hover:opacity-70 transition-opacity"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Color Tabs */}
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+              {(['yellow', 'red', 'green', 'blue', 'gray'] as const).map(color => (
                 <button
-                  key={mood}
-                  onClick={() => handleMoodSelect(mood)}
-                  className={`w-16 h-16 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-200 ${
-                    selectedMood === mood
-                      ? `${moodColors[mood]} scale-110 ring-4 ring-primary-200`
-                      : `${moodColors[mood]} opacity-60 hover:opacity-100 hover:scale-105`
+                  key={color}
+                  onClick={() => setSelectedColor(selectedColor === color ? null : color)}
+                  className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
+                    selectedColor === color
+                      ? getColorClasses(color) + ' scale-105'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >
-                  {mood}
+                  {color === 'yellow' && '😊 Happy'}
+                  {color === 'red' && '😰 Stressed'}
+                  {color === 'green' && '😌 Calm'}
+                  {color === 'blue' && '😔 Low'}
+                  {color === 'gray' && '😐 Neutral'}
                 </button>
               ))}
             </div>
 
+            {/* Emotion Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6 max-h-96 overflow-y-auto">
+              {(selectedColor 
+                ? emotionsByColor[selectedColor] 
+                : EMOTIONS
+              ).map(emotion => {
+                const emotionId = `${emotion.emoji}-${emotion.label}`
+                const isSelected = selectedEmotionIds.includes(emotionId)
+                const isDisabled = !isSelected && selectedEmotionIds.length >= 2
+                return (
+                  <button
+                    key={emotionId}
+                    onClick={() => handleEmotionSelect(emotionId)}
+                    disabled={isDisabled}
+                    className={`p-4 rounded-xl transition-all duration-200 text-center ${
+                      isSelected
+                        ? `${getColorClasses(emotion.color || 'gray')} scale-105 ring-4 ring-primary-200 dark:ring-primary-800`
+                        : isDisabled
+                        ? `${getColorClasses(emotion.color || 'gray')} opacity-30 cursor-not-allowed`
+                        : `${getColorClasses(emotion.color || 'gray')} opacity-70 hover:opacity-100 hover:scale-105`
+                    }`}
+                  >
+                    <div className="text-3xl mb-2">{emotion.emoji}</div>
+                    <div className="text-sm font-semibold">{emotion.label}</div>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Notes */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Notes (optional)
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="How are you feeling? What's on your mind?"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                placeholder="What's on your mind?"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                 rows={4}
               />
             </div>
@@ -226,17 +301,18 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
               <button
                 onClick={() => {
                   setShowModal(false)
-                  setSelectedMood(null)
+                  setSelectedEmotionIds([])
+                  setSelectedColor(null)
                   setNotes('')
                 }}
-                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
-                disabled={!selectedMood}
-                className="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={selectedEmotionIds.length === 0}
+                className="flex-1 px-4 py-3 bg-primary-600 dark:bg-primary-500 text-white rounded-xl hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Save
               </button>
@@ -249,4 +325,3 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
 }
 
 export default MoodTracker
-
