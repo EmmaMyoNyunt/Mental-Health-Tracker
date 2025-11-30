@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { format, isSameDay } from 'date-fns'
+import { isSameDay } from 'date-fns'
 import { Lightbulb, Heart, Moon, UtensilsCrossed, AlertCircle, BookOpen } from 'lucide-react'
 import { MoodEntry, StressEntry, AppetiteEntry, SleepEntry, JournalEntry } from '../types'
 
