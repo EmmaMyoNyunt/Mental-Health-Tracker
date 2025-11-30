@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -19,11 +20,21 @@ export default {
           800: '#075985',
           900: '#0c4a6e',
         },
+        garden: {
+          green: '#86efac',
+          emerald: '#10b981',
+          sage: '#9ca3af',
+          rose: '#fda4af',
+          lavender: '#c4b5fd',
+          sky: '#7dd3fc',
+        },
         soft: {
           lavender: '#e8e3f3',
           mint: '#d4f1e8',
           peach: '#ffe5d9',
           cream: '#fff8f0',
+          rose: '#ffe4e6',
+          sky: '#e0f2fe',
         }
       },
       animation: {
