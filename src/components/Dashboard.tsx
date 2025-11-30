@@ -1,4 +1,4 @@
-import { Calendar, Heart, BookOpen, TrendingUp, AlertCircle, UtensilsCrossed, Droplet, Moon } from 'lucide-react'
+import { Heart, BookOpen, TrendingUp, AlertCircle, Droplet, Moon } from 'lucide-react'
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns'
 import { MoodEntry, JournalEntry, StressEntry, AppetiteEntry, SleepEntry } from '../types'
 import { usePet } from '../contexts/PetContext'
@@ -42,11 +42,7 @@ const Dashboard = ({ moodEntries, journalEntries, stressEntries, appetiteEntries
   // Keep for backward compatibility but we'll use full data in the display
 
   const averageMood = moodEntries.length > 0
-    ? moodEntries.reduce((sum, e) => sum + e.mood, 0) / moodEntries.length
-    : 0
-
-  const averageStress = stressEntries.length > 0
-    ? stressEntries.reduce((sum, e) => sum + e.stressLevel, 0) / stressEntries.length
+    ? moodEntries.reduce((sum, e) => sum + (e.mood || 0), 0) / moodEntries.length
     : 0
 
   const moodColors = {
