@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useCallback } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { MotionPreferenceProvider } from './contexts/MotionPreferenceContext'
 import { PetProvider, usePet } from './contexts/PetContext'
 import Dashboard from './components/Dashboard'
 import MoodTracker from './components/MoodTracker'
@@ -389,9 +390,11 @@ const AppContent = () => {
 function App() {
   return (
     <ThemeProvider>
-      <PetProvider>
-        <AppContent />
-      </PetProvider>
+      <MotionPreferenceProvider>
+        <PetProvider>
+          <AppContent />
+        </PetProvider>
+      </MotionPreferenceProvider>
     </ThemeProvider>
   )
 }
