@@ -71,18 +71,17 @@ const AppetiteTracker = ({ appetiteEntries, setAppetiteEntries }: AppetiteTracke
   }
 
   const mealTypes = [
-    { value: 'breakfast', label: 'Breakfast', emoji: '🌅' },
-    { value: 'lunch', label: 'Lunch', emoji: '🌞' },
-    { value: 'dinner', label: 'Dinner', emoji: '🌙' },
-    { value: 'snack', label: 'Snack', emoji: '🍎' },
+    { value: 'breakfast', label: 'Breakfast' },
+    { value: 'lunch', label: 'Lunch' },
+    { value: 'dinner', label: 'Dinner' },
+    { value: 'snack', label: 'Snack' },
   ] as const
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="page-shell animate-fade-in">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-3">
-            <span className="text-4xl">🍽️</span>
             <UtensilsCrossed className="text-primary-600 dark:text-primary-400" size={32} />
             Appetite Tracker
           </h2>
@@ -108,7 +107,7 @@ const AppetiteTracker = ({ appetiteEntries, setAppetiteEntries }: AppetiteTracke
               onClick={() => setSelectedDate(new Date(selectedDate.getTime() - 24 * 60 * 60 * 1000))}
               className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-soft-lavender/50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
             >
-              ←
+              Prev
             </button>
             <button
               onClick={() => setSelectedDate(today)}
@@ -120,7 +119,7 @@ const AppetiteTracker = ({ appetiteEntries, setAppetiteEntries }: AppetiteTracke
               onClick={() => setSelectedDate(new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000))}
               className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-soft-lavender/50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
             >
-              →
+              Next
             </button>
           </div>
         </div>
@@ -154,14 +153,13 @@ const AppetiteTracker = ({ appetiteEntries, setAppetiteEntries }: AppetiteTracke
                     const mealType = mealTypes.find(m => m.value === meal.type)
                     return (
                       <div key={meal.id} className="flex items-center gap-3 p-3 bg-white dark:bg-gray-700 rounded-lg">
-                        <span className="text-2xl">{mealType?.emoji}</span>
                         <div className="flex-1">
                           <p className="font-medium text-gray-800 dark:text-gray-200">{meal.description}</p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">{meal.time} • {mealType?.label}</p>
                         </div>
                         {meal.rating && (
                           <div className="text-yellow-500">
-                            {'⭐'.repeat(meal.rating)}
+                            {meal.rating}/5
                           </div>
                         )}
                       </div>
@@ -233,11 +231,9 @@ const AppetiteTracker = ({ appetiteEntries, setAppetiteEntries }: AppetiteTracke
                 </div>
                 <div className="space-y-3">
                   {meals.map(meal => {
-                    const mealType = mealTypes.find(m => m.value === meal.type)
                     return (
                       <div key={meal.id} className="p-4 border border-gray-300 dark:border-gray-600 rounded-xl">
                         <div className="flex items-start gap-3 mb-3">
-                          <span className="text-2xl">{mealType?.emoji}</span>
                           <div className="flex-1 space-y-2">
                             <select
                               value={meal.type}
@@ -269,7 +265,7 @@ const AppetiteTracker = ({ appetiteEntries, setAppetiteEntries }: AppetiteTracke
                               >
                                 <option value="">No rating</option>
                                 {[1, 2, 3, 4, 5].map(r => (
-                                  <option key={r} value={r}>{r} ⭐</option>
+                                  <option key={r} value={r}>{r}/5</option>
                                 ))}
                               </select>
                             </div>
