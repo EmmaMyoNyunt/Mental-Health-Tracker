@@ -1,8 +1,9 @@
-import { Heart, BookOpen, TrendingUp, AlertCircle, Droplet, Moon } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Heart, TrendingUp, AlertCircle, Footprints, ArrowRight } from 'lucide-react'
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns'
-import { MoodEntry, JournalEntry, StressEntry, AppetiteEntry, SleepEntry } from '../types'
+import { MoodEntry, JournalEntry, StressEntry, AppetiteEntry, SleepEntry, ExerciseEntry } from '../types'
 import { usePet } from '../contexts/PetContext'
-import { getColorClasses } from '../utils/emotions'
 
 interface DashboardProps {
   moodEntries: MoodEntry[]
@@ -10,355 +11,242 @@ interface DashboardProps {
   stressEntries: StressEntry[]
   appetiteEntries: AppetiteEntry[]
   sleepEntries: SleepEntry[]
+  exerciseEntries: ExerciseEntry[]
 }
 
-const Dashboard = ({ moodEntries, journalEntries, stressEntries, appetiteEntries, sleepEntries }: DashboardProps) => {
+type HubTab = 'overview' | 'today' | 'timeline'
+
+const movementMinutesOn = (entries: ExerciseEntry[], day: Date) =>
+  entries
+    .filter((e) => isSameDay(new Date(`${e.date}T12:00:00`), day))
+    .reduce((s, e) => s + e.minutes, 0)
+
+const Dashboard = ({ moodEntries, journalEntries, stressEntries, appetiteEntries, sleepEntries, exerciseEntries }: DashboardProps) => {
   const { preferences } = usePet()
+  const [activeTab, setActiveTab] = useState<HubTab>('overview')
   const today = new Date()
   const weekStart = startOfWeek(today, { weekStartsOn: 1 })
   const weekEnd = endOfWeek(today, { weekStartsOn: 1 })
   const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd })
 
-  const todayMood = moodEntries.find(entry => 
-    isSameDay(new Date(entry.date), today)
-  )
-
-  const todayStress = stressEntries.find(entry =>
-    isSameDay(new Date(entry.date), today)
-  )
-
-  const todayAppetite = appetiteEntries.find(entry =>
-    isSameDay(new Date(entry.date), today)
-  )
-
-  const todaySleep = sleepEntries.find(entry =>
-    isSameDay(new Date(entry.date), today)
-  )
-
-  const recentJournals = journalEntries
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 3)
-
-  // Keep for backward compatibility but we'll use full data in the display
+  const todayMood = moodEntries.find((entry) => isSameDay(new Date(entry.date), today))
+  const todayStress = stressEntries.find((entry) => isSameDay(new Date(entry.date), today))
+  const todayAppetite = appetiteEntries.find((entry) => isSameDay(new Date(entry.date), today))
+  const todaySleep = sleepEntries.find((entry) => isSameDay(new Date(entry.date), today))
+  const todayMovementMinutes = movementMinutesOn(exerciseEntries, today)
 
   const averageMood = moodEntries.length > 0
     ? moodEntries.reduce((sum, e) => sum + (e.mood || 0), 0) / moodEntries.length
     : 0
 
-  const moodColors = {
-    1: 'bg-red-200 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-    2: 'bg-orange-200 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-    3: 'bg-yellow-200 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-    4: 'bg-green-200 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    5: 'bg-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-  }
+  const recentJournals = [...journalEntries]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 4)
 
-  const stressColors = {
-    1: 'bg-green-200 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    2: 'bg-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    3: 'bg-yellow-200 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-    4: 'bg-orange-200 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-    5: 'bg-red-200 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  }
+  const timelineItems = useMemo(() => {
+    const dateStr = format(today, 'yyyy-MM-dd')
+    const items: { label: string; value: string; route: string }[] = []
+
+    if (todayMood) {
+      const moodLabel = todayMood.emotions?.map((e) => e.label).join(' + ')
+        || todayMood.emotion?.label
+        || (todayMood.mood ? `Mood ${todayMood.mood}/5` : 'Logged')
+      items.push({ label: 'Mood', value: moodLabel, route: '/mood' })
+    }
+    if (todayStress) {
+      items.push({ label: 'Stress', value: `Level ${todayStress.stressLevel}/5`, route: '/stress' })
+    }
+    if (todaySleep) {
+      items.push({ label: 'Sleep', value: `${todaySleep.hours}h · quality ${todaySleep.quality}/5`, route: '/sleep' })
+    }
+    if (todayAppetite) {
+      items.push({ label: 'Appetite', value: `${todayAppetite.waterIntake} glasses · ${todayAppetite.meals.length} meals`, route: '/appetite' })
+    }
+    if (todayMovementMinutes > 0) {
+      items.push({ label: 'Movement', value: `${todayMovementMinutes} min`, route: '/movement' })
+    }
+
+    const todayJournal = journalEntries.find((entry) => entry.date === dateStr)
+    if (todayJournal) {
+      items.push({ label: 'Journal', value: todayJournal.title, route: '/journal' })
+    }
+
+    return items
+  }, [today, todayMood, todayStress, todaySleep, todayAppetite, todayMovementMinutes, journalEntries])
+
+  const navTabs: { id: HubTab; label: string }[] = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'today', label: 'Today' },
+    { id: 'timeline', label: 'Timeline' },
+  ]
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-2">
-          <span>🌱</span>
-          Welcome Back{preferences.petName ? `, ${preferences.petName}` : ''}!
-        </h2>
-        <p className="text-gray-600 dark:text-gray-300">Here's your mental health garden overview 🌸</p>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="glass-effect rounded-2xl p-6 card-hover">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
-              <Heart className="text-primary-600 dark:text-primary-400" size={24} />
-            </div>
-            <span className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-              {moodEntries.length}
-            </span>
+    <div className="page-shell animate-fade-in">
+      <div className="relative overflow-hidden rounded-2xl border border-amber-200/60 bg-gradient-to-r from-white/85 via-stone-50 to-teal-50/40 p-6 shadow-card dark:border-slate-700/70 dark:from-slate-900/85 dark:via-slate-900 dark:to-teal-950/20 dark:shadow-card-dark">
+        <div className="absolute -right-8 -top-10 h-44 w-44 rounded-full bg-primary-400/15 blur-3xl dark:bg-primary-500/10" />
+        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h2 className="mb-2 flex items-center gap-2 text-2xl font-bold text-heading">
+              <span>🌱</span>
+              Welcome back{preferences.petName ? `, ${preferences.petName}` : ''}.
+            </h2>
+            <p className="text-body max-w-2xl">
+              Your central hub for wellbeing. Switch sections below to view your bento overview, today snapshot, and daily timeline.
+            </p>
           </div>
-          <h3 className="text-gray-600 dark:text-gray-300 font-medium">Mood Entries</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Total tracked</p>
-        </div>
-
-        <div className="glass-effect rounded-2xl p-6 card-hover">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
-              <AlertCircle className="text-red-600 dark:text-red-400" size={24} />
-            </div>
-            <span className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-              {stressEntries.length}
-            </span>
-          </div>
-          <h3 className="text-gray-600 dark:text-gray-300 font-medium">Stress Entries</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Total tracked</p>
-        </div>
-
-        <div className="glass-effect rounded-2xl p-6 card-hover">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-soft-mint dark:bg-emerald-900/30 rounded-xl">
-              <BookOpen className="text-emerald-600 dark:text-emerald-400" size={24} />
-            </div>
-            <span className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-              {journalEntries.length}
-            </span>
-          </div>
-          <h3 className="text-gray-600 dark:text-gray-300 font-medium">Journal Entries</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Thoughts recorded</p>
-        </div>
-
-        <div className="glass-effect rounded-2xl p-6 card-hover">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-soft-peach dark:bg-orange-900/30 rounded-xl">
-              <TrendingUp className="text-orange-600 dark:text-orange-400" size={24} />
-            </div>
-            <span className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-              {averageMood > 0 ? averageMood.toFixed(1) : '—'}
-            </span>
-          </div>
-          <h3 className="text-gray-600 dark:text-gray-300 font-medium">Avg Mood</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">This month</p>
-        </div>
-      </div>
-
-      {/* Today's Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
-        {/* Today's Mood */}
-        <div className="glass-effect rounded-2xl p-6 card-hover">
-          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-            <span>😊</span>
-            Today's Mood
-          </h3>
-          {todayMood ? (
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                {todayMood.emotions && todayMood.emotions.length > 0 ? (
-                  <>
-                    <div className="flex gap-2">
-                      {todayMood.emotions.map((emotion, idx) => (
-                        <div key={idx} className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl ${getColorClasses(emotion.color || 'gray')}`}>
-                          {emotion.emoji}
-                        </div>
-                      ))}
-                    </div>
-                    <div>
-                      <p className="text-gray-700 dark:text-gray-200 font-medium">
-                        {todayMood.emotions.map(e => e.label).join(' + ')}
-                      </p>
-                      {todayMood.notes && (
-                        <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">{todayMood.notes}</p>
-                      )}
-                    </div>
-                  </>
-                ) : todayMood.emotion ? (
-                  <>
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl ${getColorClasses(todayMood.emotion.color || 'gray')}`}>
-                      {todayMood.emotion.emoji}
-                    </div>
-                    <div>
-                      <p className="text-gray-700 dark:text-gray-200 font-medium">
-                        {todayMood.emotion.label}
-                      </p>
-                      {todayMood.notes && (
-                        <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">{todayMood.notes}</p>
-                      )}
-                    </div>
-                  </>
-                ) : todayMood.mood ? (
-                  <>
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold ${moodColors[todayMood.mood]}`}>
-                      {todayMood.mood}
-                    </div>
-                    <div>
-                      <p className="text-gray-700 dark:text-gray-200 font-medium">
-                        {todayMood.mood === 5 ? 'Excellent 🌟' :
-                         todayMood.mood === 4 ? 'Good 😊' :
-                         todayMood.mood === 3 ? 'Okay 😐' :
-                         todayMood.mood === 2 ? 'Not Great 😔' : 'Poor 😢'}
-                      </p>
-                      {todayMood.notes && (
-                        <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">{todayMood.notes}</p>
-                      )}
-                    </div>
-                  </>
-                ) : null}
-              </div>
-            </div>
-          ) : (
-            <p className="text-gray-500 dark:text-gray-300 italic">No mood entry for today yet 🌱</p>
-          )}
-        </div>
-
-        {/* Today's Stress */}
-        <div className="glass-effect rounded-2xl p-6 card-hover">
-          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-            <span>😰</span>
-            Today's Stress
-          </h3>
-          {todayStress ? (
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold ${stressColors[todayStress.stressLevel]}`}>
-                  {todayStress.stressLevel}
-                </div>
-                <div>
-                  <p className="text-gray-700 dark:text-gray-300 font-medium">
-                    {todayStress.stressLevel === 1 ? 'Very Low 🌿' :
-                     todayStress.stressLevel === 2 ? 'Low 🍃' :
-                     todayStress.stressLevel === 3 ? 'Moderate 🟡' :
-                     todayStress.stressLevel === 4 ? 'High 🟠' : 'Very High 🔴'}
-                  </p>
-                  {todayStress.triggers && todayStress.triggers.length > 0 && (
-                    <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">
-                      Triggers: {todayStress.triggers.join(', ')}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <p className="text-gray-500 dark:text-gray-300 italic">No stress entry for today yet 🌱</p>
-          )}
-        </div>
-
-        {/* Today's Appetite */}
-        <div className="glass-effect rounded-2xl p-6 card-hover">
-          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-            <span>🍽️</span>
-            Today's Appetite
-          </h3>
-          {todayAppetite ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <Droplet className="text-blue-600 dark:text-blue-400" size={24} />
-                <div>
-                  <p className="text-gray-700 dark:text-gray-300 font-medium">
-                    {todayAppetite.waterIntake} {todayAppetite.waterIntake === 1 ? 'glass' : 'glasses'} 💧
-                  </p>
-                </div>
-              </div>
-              {todayAppetite.meals && todayAppetite.meals.length > 0 && (
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {todayAppetite.meals.length} {todayAppetite.meals.length === 1 ? 'meal' : 'meals'} logged
-                  </p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <p className="text-gray-500 dark:text-gray-300 italic">No appetite entry for today yet 🌱</p>
-          )}
-        </div>
-
-        {/* Today's Sleep */}
-        <div className="glass-effect rounded-2xl p-6 card-hover">
-          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-            <span>😴</span>
-            Today's Sleep
-          </h3>
-          {todaySleep ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <Moon className="text-blue-600 dark:text-blue-400" size={24} />
-                <div>
-                  <p className="text-gray-700 dark:text-gray-300 font-medium">
-                    {todaySleep.hours}h slept 🌙
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Quality: {todaySleep.quality === 5 ? 'Excellent' : todaySleep.quality === 4 ? 'Very Good' : todaySleep.quality === 3 ? 'Good' : todaySleep.quality === 2 ? 'Fair' : 'Poor'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <p className="text-gray-500 dark:text-gray-300 italic">No sleep entry for today yet 🌱</p>
-          )}
-        </div>
-      </div>
-
-      {/* This Week Overview - All Data */}
-      <div className="glass-effect rounded-2xl p-6 card-hover">
-        <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">This Week 🌸</h3>
-        <div className="grid grid-cols-7 gap-2">
-          {weekDays.map((day, idx) => {
-            const dayMood = moodEntries.find(e => isSameDay(new Date(e.date), day))
-            const dayStress = stressEntries.find(e => isSameDay(new Date(e.date), day))
-            const daySleep = sleepEntries.find(e => isSameDay(new Date(e.date), day))
-            const dayAppetite = appetiteEntries.find(e => isSameDay(new Date(e.date), day))
-            
-            return (
-              <div key={idx} className="text-center">
-                <p className="text-xs text-gray-600 dark:text-gray-300 mb-2 font-medium">
-                  {format(day, 'EEE')}
-                </p>
-                <div className="space-y-1">
-                  {dayMood ? (
-                    (dayMood.emotions && dayMood.emotions.length > 0) ? (
-                      <div className="flex justify-center gap-0.5">
-                        {dayMood.emotions.slice(0, 2).map((emotion, idx) => (
-                          <div key={idx} className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${getColorClasses(emotion.color || 'gray')}`}>
-                            {emotion.emoji}
-                          </div>
-                        ))}
-                      </div>
-                    ) : dayMood.emotion ? (
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto text-lg ${getColorClasses(dayMood.emotion.color || 'gray')}`}>
-                        {dayMood.emotion.emoji}
-                      </div>
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 mx-auto flex items-center justify-center">
-                        <span className="text-gray-400 dark:text-gray-500 text-xs">—</span>
-                      </div>
-                    )
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 mx-auto flex items-center justify-center">
-                      <span className="text-gray-400 dark:text-gray-500 text-xs">—</span>
-                    </div>
-                  )}
-                  <div className="flex justify-center gap-1 mt-1">
-                    {dayStress && (
-                      <span className="text-xs" title={`Stress: ${dayStress.stressLevel}`}>😰</span>
-                    )}
-                    {daySleep && (
-                      <span className="text-xs" title={`Sleep: ${daySleep.hours}h`}>😴</span>
-                    )}
-                    {dayAppetite && (
-                      <span className="text-xs" title={`Water: ${dayAppetite.waterIntake}💧`}>🍽️</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Recent Journal Entries */}
-      {recentJournals.length > 0 && (
-        <div className="glass-effect rounded-2xl p-6 card-hover">
-          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-            <span>📔</span>
-            Recent Journal Entries
-          </h3>
-          <div className="space-y-4">
-            {recentJournals.map((entry) => (
-              <div key={entry.id} className="border-l-4 border-primary-400 dark:border-primary-500 pl-4 py-2">
-                <div className="flex items-center justify-between mb-1">
-                  <h4 className="font-semibold text-gray-800 dark:text-gray-200">{entry.title}</h4>
-                  <span className="text-xs text-gray-500 dark:text-gray-300">
-                    {format(new Date(entry.date), 'MMM d, yyyy')}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
-                  {entry.content}
-                </p>
-              </div>
+          <div className="flex flex-wrap gap-2">
+            {navTabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                  activeTab === tab.id
+                    ? 'bg-primary-600 text-white'
+                    : 'surface-chip text-muted hover:text-heading'
+                }`}
+              >
+                {tab.label}
+              </button>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {activeTab === 'overview' && (
+        <div className="panel-grid">
+          <div className="glass-effect rounded-2xl p-5 card-hover xl:col-span-7">
+            <h3 className="mb-4 text-lg font-semibold text-heading">Weekly activity strip</h3>
+            <div className="grid grid-cols-7 gap-2">
+              {weekDays.map((day) => {
+                const dayMood = moodEntries.find((e) => isSameDay(new Date(e.date), day))
+                const dayStress = stressEntries.find((e) => isSameDay(new Date(e.date), day))
+                const daySleep = sleepEntries.find((e) => isSameDay(new Date(e.date), day))
+                const dayAppetite = appetiteEntries.find((e) => isSameDay(new Date(e.date), day))
+                const dayMove = movementMinutesOn(exerciseEntries, day)
+                return (
+                  <div key={day.toISOString()} className="rounded-xl border border-stone-200/70 bg-white/60 p-2 text-center dark:border-slate-700/70 dark:bg-slate-800/50">
+                    <p className="text-xs font-medium text-muted">{format(day, 'EEE')}</p>
+                    <p className="my-1 text-sm font-semibold text-heading">{format(day, 'd')}</p>
+                    <div className="flex flex-wrap justify-center gap-1 text-[10px] text-faint">
+                      {dayMood && <span>M</span>}
+                      {dayStress && <span>S</span>}
+                      {daySleep && <span>Sl</span>}
+                      {dayAppetite && <span>A</span>}
+                      {dayMove > 0 && <span>Mo</span>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="glass-effect rounded-2xl p-5 card-hover xl:col-span-5">
+            <h3 className="mb-4 text-lg font-semibold text-heading">Key metrics</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="surface-chip rounded-xl p-3">
+                <div className="flex items-center gap-2 text-muted"><Heart size={16} /> Mood logs</div>
+                <p className="mt-1 text-xl font-bold text-heading">{moodEntries.length}</p>
+              </div>
+              <div className="surface-chip rounded-xl p-3">
+                <div className="flex items-center gap-2 text-muted"><AlertCircle size={16} /> Stress logs</div>
+                <p className="mt-1 text-xl font-bold text-heading">{stressEntries.length}</p>
+              </div>
+              <div className="surface-chip rounded-xl p-3">
+                <div className="flex items-center gap-2 text-muted"><Footprints size={16} /> Movement</div>
+                <p className="mt-1 text-xl font-bold text-heading">{exerciseEntries.length}</p>
+              </div>
+              <div className="surface-chip rounded-xl p-3">
+                <div className="flex items-center gap-2 text-muted"><TrendingUp size={16} /> Avg mood</div>
+                <p className="mt-1 text-xl font-bold text-heading">{averageMood > 0 ? averageMood.toFixed(1) : '—'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'today' && (
+        <div className="panel-grid">
+          <div className="glass-effect rounded-2xl p-5 card-hover xl:col-span-3">
+            <h3 className="mb-3 text-lg font-semibold text-heading">Mood</h3>
+            <p className="text-sm text-muted">
+              {todayMood
+                ? (todayMood.emotions?.map((e) => e.label).join(' + ') || todayMood.emotion?.label || `Mood ${todayMood.mood}/5`)
+                : 'No entry yet'}
+            </p>
+          </div>
+          <div className="glass-effect rounded-2xl p-5 card-hover xl:col-span-3">
+            <h3 className="mb-3 text-lg font-semibold text-heading">Stress</h3>
+            <p className="text-sm text-muted">{todayStress ? `Level ${todayStress.stressLevel}/5` : 'No entry yet'}</p>
+          </div>
+          <div className="glass-effect rounded-2xl p-5 card-hover xl:col-span-3">
+            <h3 className="mb-3 text-lg font-semibold text-heading">Sleep</h3>
+            <p className="text-sm text-muted">{todaySleep ? `${todaySleep.hours}h · quality ${todaySleep.quality}/5` : 'No entry yet'}</p>
+          </div>
+          <div className="glass-effect rounded-2xl p-5 card-hover xl:col-span-3">
+            <h3 className="mb-3 text-lg font-semibold text-heading">Movement</h3>
+            <p className="text-sm text-muted">{todayMovementMinutes > 0 ? `${todayMovementMinutes} min` : 'No entry yet'}</p>
+          </div>
+          <div className="glass-effect rounded-2xl p-5 card-hover xl:col-span-6">
+            <h3 className="mb-3 text-lg font-semibold text-heading">Nutrition snapshot</h3>
+            <p className="text-sm text-muted">
+              {todayAppetite
+                ? `${todayAppetite.waterIntake} glasses · ${todayAppetite.meals.length} meals logged`
+                : 'No entry yet'}
+            </p>
+          </div>
+          <div className="glass-effect rounded-2xl p-5 card-hover xl:col-span-6">
+            <h3 className="mb-3 text-lg font-semibold text-heading">Quick action rail</h3>
+            <div className="flex flex-wrap gap-2">
+              <Link to="/mood" className="surface-chip rounded-lg px-3 py-2 text-sm text-muted hover:text-heading">Log mood</Link>
+              <Link to="/stress" className="surface-chip rounded-lg px-3 py-2 text-sm text-muted hover:text-heading">Log stress</Link>
+              <Link to="/movement" className="surface-chip rounded-lg px-3 py-2 text-sm text-muted hover:text-heading">Log movement</Link>
+              <Link to="/journal" className="surface-chip rounded-lg px-3 py-2 text-sm text-muted hover:text-heading">Write journal</Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'timeline' && (
+        <div className="panel-grid">
+          <div className="glass-effect rounded-2xl p-5 card-hover xl:col-span-7">
+            <h3 className="mb-4 text-lg font-semibold text-heading">Today timeline</h3>
+            {timelineItems.length === 0 ? (
+              <p className="text-sm italic text-muted">No logs yet today. Use quick actions to add your first entry.</p>
+            ) : (
+              <div className="space-y-3">
+                {timelineItems.map((item, index) => (
+                  <Link
+                    key={`${item.label}-${index}`}
+                    to={item.route}
+                    className="flex items-center justify-between rounded-xl border border-stone-200/70 bg-white/70 px-4 py-3 transition hover:border-primary-300 dark:border-slate-700/70 dark:bg-slate-800/60"
+                  >
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-faint">{item.label}</p>
+                      <p className="text-sm font-medium text-heading">{item.value}</p>
+                    </div>
+                    <ArrowRight size={16} className="text-muted" />
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="glass-effect rounded-2xl p-5 card-hover xl:col-span-5">
+            <h3 className="mb-4 text-lg font-semibold text-heading">Recent journal cards</h3>
+            {recentJournals.length === 0 ? (
+              <p className="text-sm italic text-muted">No journal entries yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {recentJournals.map((entry) => (
+                  <div key={entry.id} className="rounded-xl border border-stone-200/70 bg-white/70 p-3 dark:border-slate-700/70 dark:bg-slate-800/60">
+                    <div className="mb-1 flex items-center justify-between">
+                      <p className="text-sm font-semibold text-heading">{entry.title}</p>
+                      <span className="text-xs text-faint">{format(new Date(entry.date), 'MMM d')}</span>
+                    </div>
+                    <p className="line-clamp-2 text-xs text-muted">{entry.content}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
