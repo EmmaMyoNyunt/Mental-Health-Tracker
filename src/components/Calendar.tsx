@@ -168,11 +168,13 @@ const Calendar = ({ moodEntries, stressEntries, sleepEntries, appetiteEntries, e
                 key={day.toISOString()}
                 className={`relative min-h-[100px] rounded-lg border-2 p-2 transition-all ${
                   isToday
-                    ? 'bg-primary-50 ring-2 ring-primary-400 dark:bg-primary-950/30'
-                    : 'border-transparent bg-white/50 dark:bg-slate-800/50'
+                    ? 'border-primary-500 bg-primary-100/70 ring-2 ring-primary-400/90 dark:border-primary-400 dark:bg-slate-800 dark:ring-2 dark:ring-primary-500'
+                    : 'border-transparent bg-stone-100/75 dark:bg-slate-800/50'
                 } ${!isCurrentMonth ? 'opacity-40' : ''}`}
               >
-                <span className={`text-sm font-medium text-heading ${isToday ? 'font-bold' : ''}`}>
+                <span
+                  className={`text-sm font-medium ${isToday ? 'font-bold text-primary-900 dark:text-stone-50' : 'text-heading'}`}
+                >
                   {format(day, 'd')}
                 </span>
                 <div className="mt-2 space-y-1">
