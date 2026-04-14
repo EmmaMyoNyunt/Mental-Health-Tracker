@@ -83,11 +83,10 @@ const TodoList = ({ todos, setTodos }: TodoListProps) => {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="page-shell animate-fade-in">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-3">
-            <span className="text-4xl">✅</span>
+          <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2">
             To-Do List
           </h2>
           <p className="text-gray-600 dark:text-gray-300">Organize your tasks and track your progress</p>
@@ -103,8 +102,7 @@ const TodoList = ({ todos, setTodos }: TodoListProps) => {
 
       {/* Active Tasks */}
       <div className="glass-effect rounded-2xl p-6 card-hover">
-        <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-          <span>📋</span>
+        <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
           Active Tasks ({activeTasks.length})
         </h3>
         {activeTasks.length > 0 ? (
@@ -150,7 +148,7 @@ const TodoList = ({ todos, setTodos }: TodoListProps) => {
           </div>
         ) : (
           <p className="text-gray-500 dark:text-gray-300 italic text-center py-8">
-            No active tasks. Add one to get started! 🎯
+            No active tasks. Add one to get started.
           </p>
         )}
       </div>
@@ -158,8 +156,7 @@ const TodoList = ({ todos, setTodos }: TodoListProps) => {
       {/* Completed Tasks */}
       {completedTasks.length > 0 && (
         <div className="glass-effect rounded-2xl p-6 card-hover">
-          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-            <span>✨</span>
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
             Completed ({completedTasks.length})
           </h3>
           <div className="space-y-3">
