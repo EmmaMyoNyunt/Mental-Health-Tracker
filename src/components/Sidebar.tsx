@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Heart, BookOpen, TrendingUp, Menu, X, AlertCircle, UtensilsCrossed, Settings, Moon, Lightbulb, Calendar, CheckSquare, Footprints } from 'lucide-react'
+import { LayoutDashboard, Heart, BookOpen, TrendingUp, Menu, X, AlertCircle, UtensilsCrossed, Settings, Moon, Lightbulb, Calendar, CalendarDays, CheckSquare, Footprints } from 'lucide-react'
 import { usePet } from '../contexts/PetContext'
 
 const Sidebar = () => {
@@ -16,6 +16,7 @@ const Sidebar = () => {
     { path: '/sleep', icon: Moon, label: 'Sleep' },
     { path: '/movement', icon: Footprints, label: 'Movement' },
     { path: '/calendar', icon: Calendar, label: 'Calendar' },
+    { path: '/key-dates', icon: CalendarDays, label: 'Key\u00A0dates' },
     { path: '/todos', icon: CheckSquare, label: 'To-Do' },
     { path: '/journal', icon: BookOpen, label: 'Journal' },
     { path: '/tips', icon: Lightbulb, label: 'Tips' },
@@ -27,14 +28,14 @@ const Sidebar = () => {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="fixed left-4 top-4 z-50 rounded-lg border border-amber-200/60 bg-stone-100/90 p-2 shadow-lg backdrop-blur-lg dark:border-slate-700 dark:bg-slate-900/90 lg:hidden"
+        className="fixed left-4 top-4 z-50 rounded-lg border border-emerald-400/45 bg-gradient-to-br from-white/80 via-emerald-50/70 to-cyan-50/50 p-2 shadow-lg shadow-emerald-900/15 backdrop-blur-lg dark:border-emerald-500/30 dark:bg-gradient-to-br dark:from-slate-950/95 dark:via-emerald-950/50 dark:to-indigo-950/40 dark:shadow-lg dark:shadow-black/40 lg:hidden"
       >
         {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
       {/* Top Navbar */}
-      <header className="fixed left-0 top-0 z-40 hidden w-full border-b border-amber-200/60 bg-stone-100/90 backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-900/90 lg:block">
-        <div className="mx-auto flex h-16 max-w-[1500px] items-center gap-3 px-4">
+      <header className="fixed left-0 top-0 z-40 hidden w-full border-b border-emerald-400/40 bg-gradient-to-r from-white/85 via-emerald-50/65 to-sky-50/55 shadow-sm shadow-emerald-900/10 backdrop-blur-xl dark:border-slate-700/70 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 dark:shadow-none dark:backdrop-blur-xl lg:block">
+        <div className="mx-auto flex h-16 w-full max-w-[1920px] items-center gap-5 px-5 lg:gap-6 lg:px-10">
           <div className="flex shrink-0 items-center gap-2">
             <span className="text-xl">🌱</span>
             <h1 className="bg-gradient-to-r from-primary-600 via-teal-600 to-emerald-600 bg-clip-text text-xl font-bold text-transparent">
@@ -42,7 +43,7 @@ const Sidebar = () => {
             </h1>
           </div>
 
-          <nav className="grid min-w-0 flex-1 grid-cols-11 gap-1 px-2 py-1">
+          <nav className="flex min-w-0 flex-1 flex-nowrap items-center justify-between gap-x-2 overflow-x-auto overflow-y-hidden px-1 py-1 sm:gap-x-3 md:gap-x-4 lg:gap-x-5 xl:gap-x-6 [&::-webkit-scrollbar]:h-1">
             {navItems.map((item) => {
               const Icon = item.icon
               const isActive = location.pathname === item.path
@@ -50,14 +51,14 @@ const Sidebar = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center justify-center gap-1 rounded-lg px-2 py-2 text-xs transition xl:text-sm ${
+                  className={`flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-2 text-xs transition xl:gap-2 xl:px-3 xl:text-sm ${
                     isActive
-                      ? 'bg-primary-100 text-primary-800 dark:bg-primary-950/50 dark:text-primary-300'
-                      : 'text-stone-600 hover:bg-white/70 hover:text-primary-700 dark:text-stone-300 dark:hover:bg-slate-800/70'
+                      ? 'bg-primary-100 text-primary-800 dark:bg-emerald-950/60 dark:text-emerald-100 dark:ring-1 dark:ring-emerald-400/30'
+                      : 'text-stone-600 hover:bg-white/70 hover:text-primary-700 dark:text-stone-200 dark:hover:bg-white/5 dark:hover:text-stone-50'
                   }`}
                 >
-                  <Icon size={16} />
-                  <span className="hidden 2xl:inline">{item.label}</span>
+                  <Icon size={16} className="shrink-0" />
+                  <span className="hidden whitespace-nowrap 2xl:inline">{item.label}</span>
                 </Link>
               )
             })}
@@ -74,8 +75,8 @@ const Sidebar = () => {
               to="/settings"
               className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm transition ${
                 location.pathname === '/settings'
-                  ? 'bg-primary-100 text-primary-800 dark:bg-primary-950/50 dark:text-primary-300'
-                  : 'surface-chip text-muted hover:text-heading'
+                  ? 'bg-primary-100 text-primary-800 dark:bg-emerald-950/60 dark:text-emerald-100 dark:ring-1 dark:ring-emerald-400/30'
+                  : 'surface-chip text-muted hover:text-heading dark:text-stone-200'
               }`}
             >
               <Settings size={16} />
@@ -86,7 +87,7 @@ const Sidebar = () => {
       </header>
 
       {/* Mobile Menu Panel */}
-      <aside className={`fixed left-0 top-0 z-40 h-full w-56 border-r border-amber-200/50 bg-stone-100/92 shadow-sm backdrop-blur-xl transition-transform duration-300 dark:border-slate-700/60 dark:bg-slate-900/92 dark:shadow-card-dark lg:hidden ${
+      <aside className={`fixed left-0 top-0 z-40 h-full w-56 border-r border-emerald-400/35 bg-gradient-to-b from-emerald-50/90 via-white/85 to-fuchsia-50/40 shadow-md shadow-emerald-900/10 backdrop-blur-xl transition-transform duration-300 dark:border-emerald-500/20 dark:bg-gradient-to-b dark:from-slate-950/98 dark:via-emerald-950/35 dark:to-violet-950/40 dark:shadow-xl dark:shadow-black/35 lg:hidden ${
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="p-6">
@@ -107,8 +108,8 @@ const Sidebar = () => {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${
                     isActive
-                      ? 'bg-primary-100 text-primary-800 shadow-md dark:bg-primary-950/50 dark:text-primary-300'
-                      : 'text-stone-600 hover:bg-white/70 hover:text-primary-700 dark:text-stone-300 dark:hover:bg-slate-800/80'
+                      ? 'bg-primary-100 text-primary-800 shadow-md dark:bg-emerald-950/60 dark:text-emerald-100 dark:ring-1 dark:ring-emerald-400/30'
+                      : 'text-stone-600 hover:bg-white/70 hover:text-primary-700 dark:text-stone-200 dark:hover:bg-white/5 dark:hover:text-stone-50'
                   }`}
                 >
                   <Icon size={18} />
