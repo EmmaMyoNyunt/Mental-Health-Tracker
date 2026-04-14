@@ -61,11 +61,11 @@ const SleepTracker = ({ sleepEntries, setSleepEntries }: SleepTrackerProps) => {
   }
 
   const qualityLabels = {
-    1: { label: 'Poor', emoji: '😴', color: 'bg-red-200 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-    2: { label: 'Fair', emoji: '😪', color: 'bg-orange-200 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
-    3: { label: 'Good', emoji: '😌', color: 'bg-yellow-200 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
-    4: { label: 'Very Good', emoji: '😊', color: 'bg-green-200 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-    5: { label: 'Excellent', emoji: '😄', color: 'bg-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+    1: { label: 'Poor', color: 'bg-red-200 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+    2: { label: 'Fair', color: 'bg-orange-200 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
+    3: { label: 'Good', color: 'bg-yellow-200 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
+    4: { label: 'Very Good', color: 'bg-green-200 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+    5: { label: 'Excellent', color: 'bg-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
   }
 
   const recentEntries = [...sleepEntries]
@@ -73,11 +73,10 @@ const SleepTracker = ({ sleepEntries, setSleepEntries }: SleepTrackerProps) => {
     .slice(0, 7)
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="page-shell animate-fade-in">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-3">
-            <span className="text-4xl">😴</span>
             <Moon className="text-primary-600 dark:text-primary-400" size={32} />
             Sleep Tracker
           </h2>
@@ -103,7 +102,7 @@ const SleepTracker = ({ sleepEntries, setSleepEntries }: SleepTrackerProps) => {
               onClick={() => setSelectedDate(new Date(selectedDate.getTime() - 24 * 60 * 60 * 1000))}
               className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-soft-lavender/50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
             >
-              ←
+              Prev
             </button>
             <button
               onClick={() => setSelectedDate(today)}
@@ -115,7 +114,7 @@ const SleepTracker = ({ sleepEntries, setSleepEntries }: SleepTrackerProps) => {
               onClick={() => setSelectedDate(new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000))}
               className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-soft-lavender/50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
             >
-              →
+              Next
             </button>
           </div>
         </div>
@@ -130,7 +129,6 @@ const SleepTracker = ({ sleepEntries, setSleepEntries }: SleepTrackerProps) => {
               <div className={`p-4 rounded-xl ${qualityLabels[todayEntry.quality].color}`}>
                 <p className="text-sm mb-1">Quality</p>
                 <p className="text-2xl font-bold flex items-center gap-2">
-                  <span>{qualityLabels[todayEntry.quality].emoji}</span>
                   {qualityLabels[todayEntry.quality].label}
                 </p>
               </div>
@@ -159,7 +157,7 @@ const SleepTracker = ({ sleepEntries, setSleepEntries }: SleepTrackerProps) => {
           </div>
         ) : (
           <p className="text-gray-500 dark:text-gray-400 italic text-center py-8">
-            No sleep entry for this date. Click "Log Sleep" to add one! 🌙
+            No sleep entry for this date. Click "Log Sleep" to add one.
           </p>
         )}
       </div>
@@ -172,7 +170,6 @@ const SleepTracker = ({ sleepEntries, setSleepEntries }: SleepTrackerProps) => {
             {recentEntries.map(entry => (
               <div key={entry.id} className="flex items-center justify-between p-4 bg-white dark:bg-gray-700 rounded-xl">
                 <div className="flex items-center gap-4">
-                  <span className="text-2xl">{qualityLabels[entry.quality].emoji}</span>
                   <div>
                     <p className="font-medium text-gray-800 dark:text-gray-200">
                       {format(new Date(entry.date), 'MMM d, yyyy')}
@@ -246,7 +243,6 @@ const SleepTracker = ({ sleepEntries, setSleepEntries }: SleepTrackerProps) => {
                           : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
                     >
-                      <div className="text-2xl mb-1">{qualityLabels[q].emoji}</div>
                       <div className="text-xs font-medium">{q}</div>
                     </button>
                   ))}
