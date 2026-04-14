@@ -96,6 +96,7 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
             Mood Tracker
           </h2>
           <p className="text-gray-600 dark:text-gray-300">Select up to 2 emotions to describe how you're feeling</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Tip: click any date to edit that day&apos;s mood entry.</p>
         </div>
         <button
           onClick={() => {
@@ -185,7 +186,7 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
                 {displayEmotions.length > 0 && (
                   <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-0.5">
                     {displayEmotions.slice(0, 2).map((em, idx) => (
-                      <span key={idx} className="text-[10px] font-medium">{em.label.slice(0, 1)}</span>
+                      <span key={idx} className="text-xs">{em.emoji}</span>
                     ))}
                   </div>
                 )}
@@ -217,6 +218,7 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
                         key={emotionId}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg ${getColorClasses(emotion.color || 'gray')}`}
                       >
+                        <span className="text-lg">{emotion.emoji}</span>
                         <span className="font-semibold">{emotion.label}</span>
                         <button
                           onClick={() => handleRemoveEmotion(emotionId)}
@@ -274,7 +276,7 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
                         : `${getColorClasses(emotion.color || 'gray')} opacity-70 hover:opacity-100 hover:scale-105`
                     }`}
                   >
-                    <div className="text-xl mb-2 font-semibold">{emotion.label.slice(0, 1)}</div>
+                    <div className="text-3xl mb-2">{emotion.emoji}</div>
                     <div className="text-sm font-semibold">{emotion.label}</div>
                   </button>
                 )
