@@ -81,6 +81,7 @@ const SleepTracker = ({ sleepEntries, setSleepEntries }: SleepTrackerProps) => {
             Sleep Tracker
           </h2>
           <p className="text-gray-600 dark:text-gray-400">Track your sleep patterns and quality</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Tip: use date navigation and Log Sleep to update past entries.</p>
         </div>
         <button
           onClick={handleOpenModal}
