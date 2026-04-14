@@ -95,5 +95,16 @@ export interface TodoTask {
 }
 
 export type CalendarView = 'monthly' | 'weekly'
-export type CalendarFilter = 'all' | 'mood' | 'stress' | 'sleep' | 'appetite'
+export type CalendarFilter = 'all' | 'mood' | 'stress' | 'sleep' | 'appetite' | 'exercise'
+
+/** Light-touch movement logging for wellbeing (not a fitness app). */
+export type ExerciseKind = 'walk' | 'stretch' | 'dance' | 'gentle' | 'other'
+
+export interface ExerciseEntry {
+  id: string
+  date: string
+  minutes: number
+  kind: ExerciseKind
+  note?: string
+}
 
