@@ -441,6 +441,10 @@ const Insights = ({ moodEntries, journalEntries, stressEntries: _stressEntries, 
           </Link>
         </div>
       )}
+
+      <p className="mt-8 border-t border-stone-200/80 pt-4 text-center text-xs text-faint dark:border-slate-700/80">
+        Sources: patterns here are descriptive, not diagnostic — they do not replace professional assessment.
+      </p>
     </div>
   )
 }
