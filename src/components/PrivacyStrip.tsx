@@ -13,21 +13,30 @@ const PrivacyStrip = ({ variant = 'card' }: PrivacyStripProps) => {
     <div
       className={
         isFooter
-          ? 'rounded-xl border border-emerald-400/35 bg-white/70 px-4 py-3 text-sm text-body shadow-sm dark:border-emerald-500/25 dark:bg-slate-900/60'
-          : 'rounded-2xl border border-emerald-400/40 bg-gradient-to-r from-emerald-50/90 via-white/80 to-cyan-50/70 px-5 py-4 dark:border-emerald-500/30 dark:from-emerald-950/40 dark:via-slate-900/90 dark:to-slate-900/90'
+          ? 'rounded-xl border border-emerald-400/45 bg-white/90 px-4 py-3 text-sm shadow-sm dark:border-slate-500 dark:bg-slate-950 dark:ring-1 dark:ring-slate-600/40'
+          : 'rounded-2xl border border-emerald-400/50 bg-gradient-to-r from-emerald-50/95 via-white/90 to-cyan-50/75 px-5 py-4 dark:border-slate-500 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:ring-1 dark:ring-slate-600/30'
       }
       role="region"
       aria-label="Privacy and data storage"
     >
       <div className={`flex gap-3 ${isFooter ? 'items-start' : 'items-start sm:items-center'}`}>
         <Shield
-          className={`shrink-0 text-emerald-700 dark:text-emerald-400 ${isFooter ? 'mt-0.5 h-4 w-4' : 'h-5 w-5'}`}
+          className={`shrink-0 text-emerald-700 dark:text-emerald-300 ${isFooter ? 'mt-0.5 h-4 w-4' : 'h-5 w-5'}`}
           aria-hidden
         />
         <div className="min-w-0 space-y-1">
-          <p className={`font-medium text-heading ${isFooter ? 'text-sm' : ''}`}>Privacy</p>
-          <p className={isFooter ? 'text-xs text-muted leading-relaxed' : 'text-sm text-body'}>
+          <p className={`font-semibold text-stone-900 dark:text-stone-50 ${isFooter ? 'text-sm' : ''}`}>Privacy</p>
+          <p
+            className={
+              isFooter
+                ? 'text-xs leading-relaxed text-stone-600 dark:text-stone-300'
+                : 'text-sm text-stone-700 dark:text-stone-300'
+            }
+          >
             Stored on this device only; clearing browser data or site storage for this app removes it.
+          </p>
+          <p className="text-xs text-stone-500 dark:text-stone-400">
+            Backup / export is not available yet — it may be added in a future update.
           </p>
         </div>
       </div>
