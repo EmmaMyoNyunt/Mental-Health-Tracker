@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { isSameDay, format } from 'date-fns'
 import { Lightbulb, Heart, Moon, UtensilsCrossed, AlertCircle, BookOpen, Footprints } from 'lucide-react'
+import CrisisSupportBlock from './CrisisSupportBlock'
 import { MoodEntry, StressEntry, AppetiteEntry, SleepEntry, JournalEntry, ExerciseEntry } from '../types'
 
 interface MindfulTipsProps {
@@ -146,16 +148,12 @@ const MindfulTips = ({ moodEntries, stressEntries, appetiteEntries, sleepEntries
           Personalized suggestions based on your tracking data
         </p>
         <p className="mt-2 text-sm text-faint">
-          Tips are general suggestions. For professional support, visit{' '}
-          <a 
-            href="https://www2.hse.ie/mental-health/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-primary-600 dark:text-primary-400 hover:underline"
-          >
-            HSE Mental Health
-          </a>
+          Tips are general suggestions, not medical advice.
         </p>
+      </div>
+
+      <div className="mb-6">
+        <CrisisSupportBlock />
       </div>
 
       {/* Today's Summary */}
@@ -222,9 +220,20 @@ const MindfulTips = ({ moodEntries, stressEntries, appetiteEntries, sleepEntries
             ))}
           </div>
         ) : (
-          <p className="text-muted italic">
-            Start tracking your mood, sleep, stress, and appetite to receive personalized tips!
-          </p>
+          <div className="text-muted">
+            <p className="italic">No personalized tips yet.</p>
+            <p className="mt-2 text-sm text-body">
+              Next step:{' '}
+              <Link to="/mood" className="font-medium text-primary-700 underline decoration-primary-400/50 dark:text-primary-300">
+                Log your mood
+              </Link>{' '}
+              or{' '}
+              <Link to="/sleep" className="font-medium text-primary-700 underline decoration-primary-400/50 dark:text-primary-300">
+                log sleep
+              </Link>{' '}
+              — we&apos;ll tailor ideas from there.
+            </p>
+          </div>
         )}
       </div>
 
