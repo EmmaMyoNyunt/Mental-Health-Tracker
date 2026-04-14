@@ -26,7 +26,7 @@ const PetSelection = () => {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-stone-100 via-amber-50 to-orange-50/90 p-4 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950">
+    <div className="flex min-h-screen items-center justify-center p-4">
       <div className="glass-effect w-full max-w-2xl animate-scale-in rounded-3xl p-8 shadow-2xl md:p-12">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
