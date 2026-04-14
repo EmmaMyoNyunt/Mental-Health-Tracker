@@ -15,6 +15,7 @@ import Calendar from './components/Calendar'
 import TodoList from './components/TodoList'
 import Settings from './components/Settings'
 import Sidebar from './components/Sidebar'
+import PrivacyStrip from './components/PrivacyStrip'
 import PetSelection from './components/PetSelection'
 import AIChatbot from './components/AIChatbot'
 import { MoodEntry, JournalEntry, StressEntry, AppetiteEntry, SleepEntry, TodoTask, ExerciseEntry, ImportantDayEntry } from './types'
@@ -253,8 +254,9 @@ const AppContent = () => {
     <Router>
       <div className="flex min-h-screen">
         <Sidebar />
-        <main className="mx-auto w-full max-w-[1400px] flex-1 p-3 pt-16 lg:p-6 lg:pt-20">
+        <main className="mx-auto flex w-full max-w-[1400px] flex-1 flex-col p-3 pt-16 lg:p-6 lg:pt-20">
           <AIChatbot />
+          <div className="min-w-0 flex-1">
           <Routes>
             <Route 
               path="/" 
@@ -381,6 +383,10 @@ const AppContent = () => {
               element={<Settings />} 
             />
           </Routes>
+          </div>
+          <footer className="mt-auto shrink-0 pb-4 pt-8">
+            <PrivacyStrip variant="footer" />
+          </footer>
         </main>
       </div>
     </Router>
