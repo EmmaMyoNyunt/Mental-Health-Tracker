@@ -26,15 +26,14 @@ const PetSelection = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-soft-cream via-white to-soft-lavender dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
-      <div className="glass-effect dark:bg-gray-800/80 rounded-3xl p-8 md:p-12 max-w-2xl w-full animate-scale-in shadow-2xl">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-stone-100 via-amber-50 to-orange-50/90 p-4 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950">
+      <div className="glass-effect w-full max-w-2xl animate-scale-in rounded-3xl p-8 shadow-2xl md:p-12">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <span className="text-5xl">🌱</span>
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary-600 to-emerald-600 bg-clip-text text-transparent">
               MoodGarden
             </h1>
-            <span className="text-5xl">🌸</span>
           </div>
           <p className="text-gray-600 dark:text-gray-300 text-lg mt-2">
             Welcome! Choose a companion to help you tend to your mental health garden
