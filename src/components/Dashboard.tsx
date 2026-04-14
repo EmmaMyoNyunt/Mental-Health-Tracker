@@ -11,6 +11,7 @@ import {
   ExerciseEntry,
 } from '../types'
 import { usePet } from '../contexts/PetContext'
+import GardenPathSection from './GardenPathSection'
 
 interface DashboardProps {
   moodEntries: MoodEntry[]
@@ -21,7 +22,7 @@ interface DashboardProps {
   exerciseEntries: ExerciseEntry[]
 }
 
-type HubTab = 'todayOverview' | 'timeline'
+type HubTab = 'todayOverview' | 'timeline' | 'gardenPath'
 
 const movementMinutesOn = (entries: ExerciseEntry[], day: Date) =>
   entries
@@ -117,6 +118,7 @@ const Dashboard = ({ moodEntries, journalEntries, stressEntries, appetiteEntries
   const navTabs: { id: HubTab; label: string }[] = [
     { id: 'todayOverview', label: "Today's Overview" },
     { id: 'timeline', label: 'Timeline' },
+    { id: 'gardenPath', label: 'How it fits together' },
   ]
 
   return (
@@ -130,7 +132,8 @@ const Dashboard = ({ moodEntries, journalEntries, stressEntries, appetiteEntries
               Welcome back{preferences.petName ? `, ${preferences.petName}` : ''}.
             </h2>
             <p className="text-body max-w-2xl">
-              Your central hub for wellbeing. Use Today&apos;s Overview for this week and today&apos;s logs, or open Timeline for a focused feed.
+              Your central hub for wellbeing. Use Today&apos;s Overview for this week and today&apos;s logs, Timeline for a focused feed, or{' '}
+              <strong className="font-semibold text-heading">How it fits together</strong> to see how sleep, mood, and movement connect — with shortcuts to each tracker.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -223,7 +226,19 @@ const Dashboard = ({ moodEntries, journalEntries, stressEntries, appetiteEntries
                   <AlertCircle className="text-amber-600 dark:text-amber-400" size={18} />
                   Stress
                 </h4>
-                <p className="text-sm text-muted">{todayStress ? `Level ${todayStress.stressLevel}/5` : 'No entry yet'}</p>
+                <p className="text-sm text-muted">
+                  {todayStress ? (
+                    `Level ${todayStress.stressLevel}/5`
+                  ) : (
+                    <>
+                      No entry yet.{' '}
+                      <Link to="/stress" className="font-medium text-primary-700 underline decoration-primary-400/50 hover:text-primary-800 dark:text-primary-300">
+                        Log stress
+                      </Link>{' '}
+                      when you can.
+                    </>
+                  )}
+                </p>
               </div>
               <div className="glass-effect card-hover rounded-2xl p-5 xl:col-span-4">
                 <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-heading">
@@ -231,7 +246,17 @@ const Dashboard = ({ moodEntries, journalEntries, stressEntries, appetiteEntries
                   Sleep
                 </h4>
                 <p className="text-sm text-muted">
-                  {todaySleep ? `${todaySleep.hours}h · quality ${todaySleep.quality}/5` : 'No entry yet'}
+                  {todaySleep ? (
+                    `${todaySleep.hours}h · quality ${todaySleep.quality}/5`
+                  ) : (
+                    <>
+                      No entry yet.{' '}
+                      <Link to="/sleep" className="font-medium text-primary-700 underline decoration-primary-400/50 hover:text-primary-800 dark:text-primary-300">
+                        Log sleep
+                      </Link>{' '}
+                      to see patterns in Insights.
+                    </>
+                  )}
                 </p>
               </div>
               <Link to="/movement" className={`${linkCardClass} xl:col-span-4 group/link`}>
@@ -342,12 +367,27 @@ const Dashboard = ({ moodEntries, journalEntries, stressEntries, appetiteEntries
         </div>
       )}
 
+      {activeTab === 'gardenPath' && <GardenPathSection />}
+
       {activeTab === 'timeline' && (
         <div className="panel-grid">
           <div className="glass-effect rounded-2xl p-5 card-hover xl:col-span-7">
             <h3 className="mb-4 text-lg font-semibold text-heading">Today timeline</h3>
             {timelineItems.length === 0 ? (
-              <p className="text-sm italic text-muted">No logs yet today. Use the navigation to open a tracker and add your first entry.</p>
+              <div className="text-sm text-muted">
+                <p className="italic">No logs yet today.</p>
+                <p className="mt-2">
+                  Next step:{' '}
+                  <Link to="/sleep" className="font-medium text-primary-700 underline decoration-primary-400/50 dark:text-primary-300">
+                    Log sleep
+                  </Link>{' '}
+                  or{' '}
+                  <Link to="/mood" className="font-medium text-primary-700 underline decoration-primary-400/50 dark:text-primary-300">
+                    log mood
+                  </Link>{' '}
+                  — whichever is easiest right now.
+                </p>
+              </div>
             ) : (
               <div className="space-y-3">
                 {timelineItems.map((item, index) => (
@@ -369,7 +409,15 @@ const Dashboard = ({ moodEntries, journalEntries, stressEntries, appetiteEntries
           <div className="glass-effect rounded-2xl p-5 card-hover xl:col-span-5">
             <h3 className="mb-4 text-lg font-semibold text-heading">Recent journal cards</h3>
             {recentJournals.length === 0 ? (
-              <p className="text-sm italic text-muted">No journal entries yet.</p>
+              <div className="text-sm text-muted">
+                <p className="italic">No journal entries yet.</p>
+                <p className="mt-2">
+                  <Link to="/journal" className="font-medium text-primary-700 underline decoration-primary-400/50 dark:text-primary-300">
+                    Open Journal
+                  </Link>{' '}
+                  and write a short note — even one line counts.
+                </p>
+              </div>
             ) : (
               <div className="space-y-3">
                 {recentJournals.map((entry) => (
