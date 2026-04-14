@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { PetProvider, usePet } from './contexts/PetContext'
@@ -16,8 +16,9 @@ import Settings from './components/Settings'
 import Sidebar from './components/Sidebar'
 import PetSelection from './components/PetSelection'
 import AIChatbot from './components/AIChatbot'
-import { MoodEntry, JournalEntry, StressEntry, AppetiteEntry, SleepEntry, TodoTask, ExerciseEntry } from './types'
+import { MoodEntry, JournalEntry, StressEntry, AppetiteEntry, SleepEntry, TodoTask, ExerciseEntry, ImportantDayEntry } from './types'
 import ExerciseTracker from './components/ExerciseTracker'
+import ImportantDaysCalendar from './components/ImportantDaysCalendar'
 
 const AppContent = () => {
   const { hasSelectedPet, preferences } = usePet()
@@ -28,6 +29,7 @@ const AppContent = () => {
   const [sleepEntries, setSleepEntries] = useState<SleepEntry[]>([])
   const [todos, setTodos] = useState<TodoTask[]>([])
   const [exerciseEntries, setExerciseEntries] = useState<ExerciseEntry[]>([])
+  const [importantDays, setImportantDays] = useState<ImportantDayEntry[]>([])
 
   // Get storage key based on pet type and name (sanitized) - memoized to prevent recreation
   const getStorageKey = useCallback((key: string) => {
@@ -40,8 +42,8 @@ const AppContent = () => {
     return `moodGarden_${preferences.petType}_${sanitizedName}_${key}`
   }, [preferences.petType, preferences.petName])
 
-  // Load data from localStorage on mount - only run once when pet is selected
-  useEffect(() => {
+  // Hydrate from localStorage before passive effects run, so save effects do not overwrite storage with initial [].
+  useLayoutEffect(() => {
     if (!hasSelectedPet || !preferences.petType || !preferences.petName) return
 
     const moodKey = getStorageKey('moodEntries')
@@ -51,8 +53,9 @@ const AppContent = () => {
     const sleepKey = getStorageKey('sleepEntries')
     const todoKey = getStorageKey('todos')
     const exerciseKey = getStorageKey('exerciseEntries')
+    const importantDaysKey = getStorageKey('importantDays')
 
-    if (!moodKey || !journalKey || !stressKey || !appetiteKey || !sleepKey || !todoKey || !exerciseKey) {
+    if (!moodKey || !journalKey || !stressKey || !appetiteKey || !sleepKey || !todoKey || !exerciseKey || !importantDaysKey) {
       console.warn('Storage keys not available, skipping data load')
       return
     }
@@ -155,7 +158,21 @@ const AppContent = () => {
         }
       }
     }
-  }, [hasSelectedPet, preferences.petType, preferences.petName]) // Only depend on these, not getStorageKey
+
+    if (importantDays.length === 0) {
+      const savedImportant = localStorage.getItem(importantDaysKey)
+      if (savedImportant) {
+        try {
+          const parsed = JSON.parse(savedImportant)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setImportantDays(parsed)
+          }
+        } catch (e) {
+          console.error('Error parsing important days:', e)
+        }
+      }
+    }
+  }, [hasSelectedPet, preferences.petType, preferences.petName, getStorageKey])
 
   // Save mood entries to localStorage
   useEffect(() => {
@@ -218,6 +235,14 @@ const AppContent = () => {
       localStorage.setItem(key, JSON.stringify(exerciseEntries))
     }
   }, [exerciseEntries, hasSelectedPet, preferences.petType, preferences.petName, getStorageKey])
+
+  useEffect(() => {
+    if (!hasSelectedPet || !preferences.petType || !preferences.petName) return
+    const key = getStorageKey('importantDays')
+    if (key) {
+      localStorage.setItem(key, JSON.stringify(importantDays))
+    }
+  }, [importantDays, hasSelectedPet, preferences.petType, preferences.petName, getStorageKey])
 
   if (!hasSelectedPet) {
     return <PetSelection />
@@ -312,6 +337,12 @@ const AppContent = () => {
                   exerciseEntries={exerciseEntries}
                 />
               } 
+            />
+            <Route
+              path="/key-dates"
+              element={
+                <ImportantDaysCalendar importantDays={importantDays} setImportantDays={setImportantDays} />
+              }
             />
             <Route 
               path="/todos" 
