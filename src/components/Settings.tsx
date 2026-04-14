@@ -5,6 +5,7 @@ import { useMotionPreference, type MotionPreference } from '../contexts/MotionPr
 import { usePet } from '../contexts/PetContext'
 import { PetType } from '../types'
 import CrisisSupportBlock from './CrisisSupportBlock'
+import PrivacyStrip from './PrivacyStrip'
 
 const Settings = () => {
   const { theme, toggleTheme } = useTheme()
@@ -70,6 +71,10 @@ const Settings = () => {
           Settings
         </h2>
         <p className="text-gray-600 dark:text-gray-400">Manage your MoodGarden preferences</p>
+      </div>
+
+      <div className="mb-6">
+        <PrivacyStrip variant="card" />
       </div>
 
       <div className="mb-6">
