@@ -14,7 +14,7 @@ const AIChatbot = () => {
     {
       id: '1',
       role: 'assistant',
-      content: "Hello! I'm here to provide general mental health support and information. How can I help you today? 🌱\n\nPlease note: I provide general guidance only. For professional support, please consult with a healthcare provider or visit HSE Mental Health Services.",
+      content: "Hello! I'm here to provide general mental health support and information. How can I help you today?\n\nPlease note: I provide general guidance only. For professional support, please consult with a healthcare provider or visit HSE Mental Health Services.",
       timestamp: new Date(),
     },
   ])
@@ -162,9 +162,9 @@ const AIChatbot = () => {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 w-96 h-[600px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col z-50 border border-gray-200 dark:border-gray-700">
+    <div className="fixed bottom-6 right-6 z-50 flex h-[600px] w-96 flex-col rounded-2xl border border-amber-200/80 bg-sand-50 shadow-2xl dark:border-night-600 dark:bg-night-900">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-primary-600 dark:bg-primary-500 text-white rounded-t-2xl">
+      <div className="flex items-center justify-between rounded-t-2xl border-b border-white/20 bg-primary-600 p-4 text-white dark:border-night-700/50 dark:bg-primary-600">
         <div className="flex items-center gap-2">
           <Bot size={20} />
           <h3 className="font-semibold">AI Mental Health Assistant</h3>
@@ -193,14 +193,14 @@ const AIChatbot = () => {
               className={`max-w-[80%] rounded-xl px-4 py-2 ${
                 message.role === 'user'
                   ? 'bg-primary-600 dark:bg-primary-500 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                  : 'bg-white/90 text-stone-800 dark:bg-night-800 dark:text-stone-100'
               }`}
             >
               <p className="text-sm whitespace-pre-wrap">{message.content}</p>
             </div>
             {message.role === 'user' && (
-              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center flex-shrink-0">
-                <User size={16} className="text-gray-600 dark:text-gray-300" />
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-stone-200 dark:bg-night-700">
+                <User size={16} className="text-stone-600 dark:text-stone-300" />
               </div>
             )}
           </div>
@@ -210,11 +210,11 @@ const AIChatbot = () => {
             <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
               <Bot size={16} className="text-primary-600 dark:text-primary-400" />
             </div>
-            <div className="bg-gray-100 dark:bg-gray-700 rounded-xl px-4 py-2">
+            <div className="rounded-xl bg-white/90 px-4 py-2 dark:bg-night-800">
               <div className="flex gap-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="h-2 w-2 animate-bounce rounded-full bg-stone-400 dark:bg-stone-500" style={{ animationDelay: '0ms' }} />
+                <div className="h-2 w-2 animate-bounce rounded-full bg-stone-400 dark:bg-stone-500" style={{ animationDelay: '150ms' }} />
+                <div className="h-2 w-2 animate-bounce rounded-full bg-stone-400 dark:bg-stone-500" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           </div>
@@ -223,14 +223,14 @@ const AIChatbot = () => {
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="border-t border-amber-200/60 p-4 dark:border-night-600">
         <div className="flex gap-2">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+            className="flex-1 resize-none rounded-xl border border-stone-200 bg-white px-4 py-2 text-stone-900 focus:border-transparent focus:ring-2 focus:ring-primary-500 dark:border-night-600 dark:bg-night-800 dark:text-stone-100"
             rows={2}
             disabled={isLoading}
           />
@@ -242,7 +242,7 @@ const AIChatbot = () => {
             <Send size={20} />
           </button>
         </div>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+        <p className="mt-2 text-xs text-stone-600 dark:text-stone-400">
           General guidance only. For professional help, visit{' '}
           <a href="https://www2.hse.ie/mental-health/" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline">
             HSE Mental Health
