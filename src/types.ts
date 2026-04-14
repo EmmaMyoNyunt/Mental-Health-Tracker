@@ -1,6 +1,16 @@
 export type MoodLevel = 1 | 2 | 3 | 4 | 5 // Keep for backward compatibility
 export type StressLevel = 1 | 2 | 3 | 4 | 5
-export type PetType = 'cat' | 'dog' | null
+export type PetType =
+  | 'cat'
+  | 'dog'
+  | 'rabbit'
+  | 'horse'
+  | 'bird'
+  | 'panda'
+  | 'penguin'
+  | 'fox'
+  | 'turtle'
+  | null
 export type Theme = 'light' | 'dark'
 
 // Arousal-Valence Model
