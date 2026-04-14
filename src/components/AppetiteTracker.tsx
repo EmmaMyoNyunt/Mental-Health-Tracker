@@ -33,21 +33,35 @@ const AppetiteTracker = ({ appetiteEntries, setAppetiteEntries }: AppetiteTracke
   }
 
   const handleSave = () => {
-    const existingIndex = appetiteEntries.findIndex(e => e.date === dateStr)
+    setAppetiteEntries(prev => {
+      const existingEntry = prev.find(e => e.date === dateStr)
 
-    const newEntry: AppetiteEntry = {
-      id: existingIndex >= 0 ? appetiteEntries[existingIndex].id : crypto.randomUUID(),
-      date: dateStr,
-      waterIntake,
-      meals,
-      notes: notes.trim() || undefined,
-    }
+      // Keep existing meals and merge modal meals by id so new meals are appended,
+      // while edits to existing meals still update correctly.
+      const mergedMealsMap = new Map<string, MealEntry>()
+      ;(existingEntry?.meals || []).forEach(meal => mergedMealsMap.set(meal.id, meal))
+      meals.forEach(meal => mergedMealsMap.set(meal.id, meal))
+      const mergedMeals = Array.from(mergedMealsMap.values())
 
-    if (existingIndex >= 0) {
-      setAppetiteEntries(prev => prev.map((e, i) => i === existingIndex ? newEntry : e))
-    } else {
-      setAppetiteEntries(prev => [...prev, newEntry])
-    }
+      if (existingEntry) {
+        const updatedEntry: AppetiteEntry = {
+          ...existingEntry,
+          waterIntake,
+          meals: mergedMeals,
+          notes: notes.trim() || undefined,
+        }
+        return prev.map(e => e.date === dateStr ? updatedEntry : e)
+      }
+
+      const newEntry: AppetiteEntry = {
+        id: crypto.randomUUID(),
+        date: dateStr,
+        waterIntake,
+        meals: mergedMeals,
+        notes: notes.trim() || undefined,
+      }
+      return [...prev, newEntry]
+    })
 
     setShowModal(false)
   }
@@ -86,6 +100,7 @@ const AppetiteTracker = ({ appetiteEntries, setAppetiteEntries }: AppetiteTracke
             Appetite Tracker
           </h2>
           <p className="text-gray-600 dark:text-gray-400">Track your water intake and meals</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Tip: use date navigation and Log Entry to edit entries and meals for that day.</p>
         </div>
         <button
           onClick={handleOpenModal}
