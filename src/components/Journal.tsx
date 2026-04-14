@@ -73,7 +73,7 @@ const Journal = ({ journalEntries, setJournalEntries }: JournalProps) => {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="page-shell animate-fade-in">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-3">
