@@ -43,7 +43,7 @@ const PetSelection = () => {
         {!showNameInput ? (
           <div className="space-y-6">
             <p className="text-center text-gray-600 dark:text-gray-400 mb-4">
-              Choose a companion to help you track your mental health. Your data will be saved anonymously using your pet's name.
+              Choose a companion to help you track your mental health. Your data will be saved anonymously using your pet&apos;s name.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <button
@@ -131,4 +131,3 @@ const PetSelection = () => {
 }
 
 export default PetSelection
-
