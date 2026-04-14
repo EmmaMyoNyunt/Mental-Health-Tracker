@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, startOfWeek, endOfWeek } from 'date-fns'
 import { Calendar as CalendarIcon, Filter } from 'lucide-react'
-import { MoodEntry, StressEntry, SleepEntry, AppetiteEntry, CalendarView, CalendarFilter } from '../types'
+import { MoodEntry, StressEntry, SleepEntry, AppetiteEntry, ExerciseEntry, CalendarView, CalendarFilter } from '../types'
 import { getColorClasses } from '../utils/emotions'
 
 interface CalendarProps {
@@ -9,9 +9,13 @@ interface CalendarProps {
   stressEntries: StressEntry[]
   sleepEntries: SleepEntry[]
   appetiteEntries: AppetiteEntry[]
+  exerciseEntries: ExerciseEntry[]
 }
 
-const Calendar = ({ moodEntries, stressEntries, sleepEntries, appetiteEntries }: CalendarProps) => {
+const movementMinutesForDate = (entries: ExerciseEntry[], dateStr: string) =>
+  entries.filter((e) => e.date === dateStr).reduce((s, e) => s + e.minutes, 0)
+
+const Calendar = ({ moodEntries, stressEntries, sleepEntries, appetiteEntries, exerciseEntries }: CalendarProps) => {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [view, setView] = useState<CalendarView>('monthly')
   const [filter, setFilter] = useState<CalendarFilter>('all')
@@ -35,21 +39,21 @@ const Calendar = ({ moodEntries, stressEntries, sleepEntries, appetiteEntries }:
       stress: stressEntries.find(e => e.date === dateStr),
       sleep: sleepEntries.find(e => e.date === dateStr),
       appetite: appetiteEntries.find(e => e.date === dateStr),
+      movementMinutes: movementMinutesForDate(exerciseEntries, dateStr),
     }
   }
 
   const daysToShow = view === 'monthly' ? monthDays : weekDays
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="page-shell animate-fade-in">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-3">
-            <span className="text-4xl">📅</span>
-            <CalendarIcon className="text-primary-600 dark:text-primary-400" size={32} />
+          <h2 className="mb-2 flex items-center gap-3 text-2xl font-bold text-heading">
+            <CalendarIcon className="text-primary-600 dark:text-primary-400" size={28} />
             Calendar
           </h2>
-          <p className="text-gray-600 dark:text-gray-400">View all your tracking data in one place</p>
+          <p className="text-muted">View mood, stress, sleep, appetite, and movement together</p>
         </div>
       </div>
 
@@ -83,13 +87,14 @@ const Calendar = ({ moodEntries, stressEntries, sleepEntries, appetiteEntries }:
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value as CalendarFilter)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+              className="rounded-lg border border-stone-200 bg-white px-4 py-2 text-stone-800 dark:border-slate-700 dark:bg-slate-800 dark:text-stone-100"
             >
-              <option value="all">All Trackers</option>
+              <option value="all">All trackers</option>
               <option value="mood">Mood</option>
               <option value="stress">Stress</option>
               <option value="sleep">Sleep</option>
               <option value="appetite">Appetite</option>
+              <option value="exercise">Movement</option>
             </select>
           </div>
         </div>
@@ -111,9 +116,9 @@ const Calendar = ({ moodEntries, stressEntries, sleepEntries, appetiteEntries }:
                   setSelectedDate(new Date(selectedDate.getTime() - 7 * 24 * 60 * 60 * 1000))
                 }
               }}
-              className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-soft-lavender/50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
+              className="rounded-lg px-4 py-2 text-gray-600 transition-colors hover:bg-stone-200/60 dark:text-gray-400 dark:hover:bg-slate-800/60"
             >
-              ←
+              Prev
             </button>
             <button
               onClick={() => setSelectedDate(today)}
@@ -129,9 +134,9 @@ const Calendar = ({ moodEntries, stressEntries, sleepEntries, appetiteEntries }:
                   setSelectedDate(new Date(selectedDate.getTime() + 7 * 24 * 60 * 60 * 1000))
                 }
               }}
-              className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-soft-lavender/50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
+              className="rounded-lg px-4 py-2 text-gray-600 transition-colors hover:bg-stone-200/60 dark:text-gray-400 dark:hover:bg-slate-800/60"
             >
-              →
+              Next
             </button>
           </div>
         </div>
@@ -155,17 +160,19 @@ const Calendar = ({ moodEntries, stressEntries, sleepEntries, appetiteEntries }:
             const showStress = (filter === 'all' || filter === 'stress') && dayData.stress
             const showSleep = (filter === 'all' || filter === 'sleep') && dayData.sleep
             const showAppetite = (filter === 'all' || filter === 'appetite') && dayData.appetite
+            const showMovement =
+              (filter === 'all' || filter === 'exercise') && dayData.movementMinutes > 0
 
             return (
               <div
                 key={day.toISOString()}
-                className={`relative p-2 rounded-lg border-2 transition-all ${
+                className={`relative min-h-[100px] rounded-lg border-2 p-2 transition-all ${
                   isToday
-                    ? 'ring-2 ring-primary-400 bg-primary-50 dark:bg-primary-900/20'
-                    : 'bg-gray-50 dark:bg-gray-700 border-transparent'
-                } ${!isCurrentMonth ? 'opacity-40' : ''} min-h-[100px]`}
+                    ? 'bg-primary-50 ring-2 ring-primary-400 dark:bg-primary-950/30'
+                    : 'border-transparent bg-white/50 dark:bg-slate-800/50'
+                } ${!isCurrentMonth ? 'opacity-40' : ''}`}
               >
-                <span className={`text-sm font-medium ${isToday ? 'font-bold' : ''}`}>
+                <span className={`text-sm font-medium text-heading ${isToday ? 'font-bold' : ''}`}>
                   {format(day, 'd')}
                 </span>
                 <div className="mt-2 space-y-1">
@@ -174,29 +181,34 @@ const Calendar = ({ moodEntries, stressEntries, sleepEntries, appetiteEntries }:
                       <div className="space-y-1">
                         {dayData.mood.emotions.map((emotion, idx) => (
                           <div key={idx} className={`text-xs p-1 rounded ${getColorClasses(emotion.color || 'gray')}`}>
-                            {emotion.emoji} {emotion.label}
+                            {emotion.label}
                           </div>
                         ))}
                       </div>
                     ) : dayData.mood.emotion ? (
                       <div className={`text-xs p-1 rounded ${getColorClasses(dayData.mood.emotion.color || 'gray')}`}>
-                        {dayData.mood.emotion.emoji} {dayData.mood.emotion.label}
+                        {dayData.mood.emotion.label}
                       </div>
                     ) : null
                   )}
                   {showStress && (
                     <div className="text-xs p-1 rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
-                      😰 Stress: {dayData.stress?.stressLevel}
+                      Stress: {dayData.stress?.stressLevel}
                     </div>
                   )}
                   {showSleep && (
                     <div className="text-xs p-1 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
-                      😴 {dayData.sleep?.hours}h
+                      Sleep: {dayData.sleep?.hours}h
                     </div>
                   )}
                   {showAppetite && (
                     <div className="text-xs p-1 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
-                      🍽️ {dayData.appetite?.waterIntake}💧
+                      Appetite: {dayData.appetite?.waterIntake}
+                    </div>
+                  )}
+                  {showMovement && (
+                    <div className="rounded bg-teal-100 p-1 text-xs text-teal-800 dark:bg-teal-950/40 dark:text-teal-200">
+                      Movement: {dayData.movementMinutes} min
                     </div>
                   )}
                 </div>
