@@ -215,7 +215,7 @@ const MindfulTips = ({ moodEntries, stressEntries, appetiteEntries, sleepEntries
             {tips.map((tip, index) => (
               <div
                 key={index}
-                className="rounded-xl border-l-4 border-primary-400 bg-white/80 p-4 dark:border-primary-500 dark:bg-slate-800/60"
+                className="rounded-xl border-l-4 border-primary-400 bg-white/80 p-4 dark:border-emerald-400/70 dark:bg-gradient-to-br dark:from-slate-900/95 dark:to-emerald-950/35"
               >
                 <p className="text-body">{tip}</p>
               </div>
@@ -232,18 +232,18 @@ const MindfulTips = ({ moodEntries, stressEntries, appetiteEntries, sleepEntries
       <div className="glass-effect rounded-2xl p-6 card-hover">
         <h3 className="mb-4 text-xl font-semibold text-heading">Resources &amp; support</h3>
         <div className="space-y-3 text-sm">
-          <p className="text-muted">
-            If you're struggling with your mental health, remember that support is available.
+          <p className="text-stone-700 dark:text-stone-200">
+            If you&apos;re struggling with your mental health, remember that support is available.
           </p>
           <div className="mt-4 space-y-2">
             <a
               href="https://www2.hse.ie/mental-health/"
               target="_blank"
               rel="noopener noreferrer"
-              className="block rounded-lg bg-primary-50 p-3 transition-colors hover:bg-primary-100 dark:bg-primary-950/40 dark:hover:bg-primary-900/30"
+              className="block rounded-xl border-2 border-emerald-400/45 bg-gradient-to-br from-white/90 via-emerald-50/80 to-violet-100/60 p-4 shadow-md shadow-emerald-900/10 transition-colors hover:border-teal-400/70 hover:from-emerald-50/95 hover:via-cyan-50/70 hover:to-fuchsia-100/50 dark:border-emerald-500/40 dark:bg-gradient-to-br dark:from-slate-900/95 dark:via-teal-950/40 dark:to-violet-950/45 dark:shadow-lg dark:shadow-black/30 dark:hover:border-emerald-400/60 dark:hover:from-slate-800/95 dark:hover:via-emerald-950/45 dark:hover:to-indigo-950/40"
             >
-              <p className="font-semibold text-primary-800 dark:text-primary-300">HSE Mental Health Services</p>
-              <p className="text-xs text-muted">Information and support resources</p>
+              <p className="font-semibold text-stone-900 dark:text-stone-50">HSE Mental Health Services</p>
+              <p className="mt-1 text-xs text-stone-600 dark:text-stone-300">Information and support resources</p>
             </a>
           </div>
         </div>
