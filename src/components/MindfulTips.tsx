@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import { isSameDay } from 'date-fns'
-import { Lightbulb, Heart, Moon, UtensilsCrossed, AlertCircle, BookOpen } from 'lucide-react'
-import { MoodEntry, StressEntry, AppetiteEntry, SleepEntry, JournalEntry } from '../types'
+import { isSameDay, format } from 'date-fns'
+import { Lightbulb, Heart, Moon, UtensilsCrossed, AlertCircle, BookOpen, Footprints } from 'lucide-react'
+import { MoodEntry, StressEntry, AppetiteEntry, SleepEntry, JournalEntry, ExerciseEntry } from '../types'
 
 interface MindfulTipsProps {
   moodEntries: MoodEntry[]
@@ -9,9 +9,10 @@ interface MindfulTipsProps {
   appetiteEntries: AppetiteEntry[]
   sleepEntries: SleepEntry[]
   journalEntries: JournalEntry[]
+  exerciseEntries: ExerciseEntry[]
 }
 
-const MindfulTips = ({ moodEntries, stressEntries, appetiteEntries, sleepEntries, journalEntries }: MindfulTipsProps) => {
+const MindfulTips = ({ moodEntries, stressEntries, appetiteEntries, sleepEntries, journalEntries, exerciseEntries }: MindfulTipsProps) => {
   const today = new Date()
 
   const todayMood = moodEntries.find(e => isSameDay(new Date(e.date), today))
@@ -19,6 +20,10 @@ const MindfulTips = ({ moodEntries, stressEntries, appetiteEntries, sleepEntries
   const todayAppetite = appetiteEntries.find(e => isSameDay(new Date(e.date), today))
   const todaySleep = sleepEntries.find(e => isSameDay(new Date(e.date), today))
   const todayJournal = journalEntries.find(e => isSameDay(new Date(e.date), today))
+  const todayStr = format(today, 'yyyy-MM-dd')
+  const todayMovementMinutes = exerciseEntries
+    .filter((e) => e.date === todayStr)
+    .reduce((s, e) => s + e.minutes, 0)
 
   const tips = useMemo(() => {
     const tipsList: string[] = []
@@ -28,84 +33,94 @@ const MindfulTips = ({ moodEntries, stressEntries, appetiteEntries, sleepEntries
       if (todayMood.valence !== undefined && todayMood.arousal !== undefined) {
         // High arousal + negative (anxious, stressed, angry)
         if (todayMood.arousal >= 4 && todayMood.valence < 0) {
-          tipsList.push('🌿 Try some deep breathing exercises - breathe in for 4 counts, hold for 4, and out for 4')
-          tipsList.push('🧘 Consider a short mindfulness or meditation session to help calm your mind')
-          tipsList.push('🚶 Take a gentle walk outside if possible - movement can help regulate emotions')
+          tipsList.push('Try some deep breathing exercises - breathe in for 4 counts, hold for 4, and out for 4')
+          tipsList.push('Consider a short mindfulness or meditation session to help calm your mind')
+          tipsList.push('Take a gentle walk outside if possible - movement can help regulate emotions')
         }
         // Low arousal + negative (sad, depressed, tired)
         else if (todayMood.arousal <= 2 && todayMood.valence < 0) {
-          tipsList.push('☀️ Try to get some natural light exposure - even a few minutes can help')
-          tipsList.push('💧 Make sure you\'re staying hydrated - dehydration can affect mood')
-          tipsList.push('📞 Consider reaching out to someone you trust - connection can help')
+          tipsList.push('Try to get some natural light exposure - even a few minutes can help')
+          tipsList.push('Make sure you\'re staying hydrated - dehydration can affect mood')
+          tipsList.push('Consider reaching out to someone you trust - connection can help')
         }
         // High arousal + positive (excited, happy)
         else if (todayMood.arousal >= 4 && todayMood.valence > 0) {
-          tipsList.push('✨ Great to see you\'re feeling energetic! Channel this into something positive')
-          tipsList.push('📝 Consider journaling about what\'s making you feel good today')
+          tipsList.push('Great to see you\'re feeling energetic. Channel this into something positive')
+          tipsList.push('Consider journaling about what is making you feel good today')
         }
         // Low arousal + positive (calm, content)
         else if (todayMood.arousal <= 2 && todayMood.valence > 0) {
-          tipsList.push('😌 You seem to be in a peaceful state - enjoy this moment of calm')
+          tipsList.push('You seem to be in a peaceful state - enjoy this moment of calm')
         }
       }
     } else {
-      tipsList.push('📊 Consider tracking your mood today to better understand your emotional patterns')
+      tipsList.push('Consider tracking your mood today to better understand your emotional patterns')
     }
 
     // Sleep-based tips
     if (todaySleep) {
       if (todaySleep.hours < 7) {
-        tipsList.push('😴 You got less than 7 hours of sleep - try to aim for 7-9 hours for better wellbeing')
-        tipsList.push('🌙 Consider establishing a regular bedtime routine to improve sleep quality')
+        tipsList.push('You got less than 7 hours of sleep - try to aim for 7-9 hours for better wellbeing')
+        tipsList.push('Consider establishing a regular bedtime routine to improve sleep quality')
       } else if (todaySleep.hours > 9) {
-        tipsList.push('💤 You got more than 9 hours - make sure you\'re not oversleeping regularly')
+        tipsList.push('You got more than 9 hours - make sure you\'re not oversleeping regularly')
       }
       if (todaySleep.quality <= 2) {
-        tipsList.push('🛏️ Poor sleep quality can affect your mood - try limiting screens before bed')
-        tipsList.push('🍵 Avoid caffeine in the afternoon and evening to improve sleep quality')
+        tipsList.push('Poor sleep quality can affect your mood - try limiting screens before bed')
+        tipsList.push('Avoid caffeine in the afternoon and evening to improve sleep quality')
       }
     } else {
-      tipsList.push('🌙 Tracking your sleep can help identify patterns that affect your mental health')
+      tipsList.push('Tracking your sleep can help identify patterns that affect your mental health')
     }
 
     // Stress-based tips
     if (todayStress) {
       if (todayStress.stressLevel >= 4) {
-        tipsList.push('😰 High stress detected - try the 5-4-3-2-1 grounding technique: notice 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste')
-        tipsList.push('💆 Take regular breaks throughout the day - even 5 minutes can help')
-        tipsList.push('📝 Writing down your stress triggers can help you understand and manage them better')
+        tipsList.push('High stress detected - try the 5-4-3-2-1 grounding technique: notice 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste')
+        tipsList.push('Take regular breaks throughout the day - even 5 minutes can help')
+        tipsList.push('Writing down your stress triggers can help you understand and manage them better')
       }
     } else {
-      tipsList.push('📊 Tracking stress levels can help you identify patterns and triggers')
+      tipsList.push('Tracking stress levels can help you identify patterns and triggers')
+    }
+
+    // Gentle movement (wellbeing, not fitness)
+    if (todayMovementMinutes === 0) {
+      tipsList.push('A short movement break (even 5-10 minutes) can lift energy and soften stress - walk, stretch, or put on a song and move')
+    } else if (todayMovementMinutes < 15) {
+      tipsList.push('You have already moved today - if you have another minute, a quick stretch or walk can reinforce that win')
+    }
+    if (todayStress && todayStress.stressLevel >= 3 && todayMovementMinutes < 10) {
+      tipsList.push('Pairing movement with stress spikes often helps - try pacing, shoulder rolls, or stepping outside between tasks')
     }
 
     // Appetite-based tips
     if (todayAppetite) {
       if (todayAppetite.waterIntake < 6) {
-        tipsList.push('💧 You\'ve had less than 6 glasses of water - staying hydrated is important for mental health')
+        tipsList.push('You have had less than 6 glasses of water - staying hydrated is important for mental health')
       }
       if (!todayAppetite.meals || todayAppetite.meals.length < 2) {
-        tipsList.push('🍽️ Regular meals help maintain stable energy and mood throughout the day')
+        tipsList.push('Regular meals help maintain stable energy and mood throughout the day')
       }
     } else {
-      tipsList.push('🥗 Tracking your food and water intake can help you see connections with your mood and energy')
+      tipsList.push('Tracking your food and water intake can help you see connections with your mood and energy')
     }
 
     // Journaling tips
     if (!todayJournal) {
-      tipsList.push('📔 Consider journaling today - writing about your thoughts and feelings can be helpful')
-      tipsList.push('✍️ Even a few sentences about your day can help process emotions')
+      tipsList.push('Consider journaling today - writing about your thoughts and feelings can be helpful')
+      tipsList.push('Even a few sentences about your day can help process emotions')
     }
 
     // General wellness tips (always show a few)
     const generalTips = [
-      '🌱 Small, consistent actions for your wellbeing add up over time',
-      '🌿 Spending time in nature, even briefly, can boost your mood',
-      '🎵 Listening to calming music can help reduce stress and anxiety',
-      '📱 Consider taking regular breaks from screens and social media',
-      '🤝 Maintaining social connections is important for mental health',
-      '🏃 Regular physical activity, even gentle movement, supports mental wellbeing',
-      '🧘 Mindfulness practices don\'t have to be long - even 2-3 minutes can help',
+      'Small, consistent actions for your wellbeing add up over time',
+      'Spending time in nature, even briefly, can boost your mood',
+      'Listening to calming music can help reduce stress and anxiety',
+      'Consider taking regular breaks from screens and social media',
+      'Maintaining social connections is important for mental health',
+      'Regular physical activity, even gentle movement, supports mental wellbeing',
+      'Mindfulness practices do not have to be long - even 2-3 minutes can help',
     ]
 
     // Add 1-2 general tips if we have space
@@ -118,20 +133,19 @@ const MindfulTips = ({ moodEntries, stressEntries, appetiteEntries, sleepEntries
     }
 
     return tipsList
-  }, [todayMood, todayStress, todayAppetite, todaySleep, todayJournal])
+  }, [todayMood, todayStress, todayAppetite, todaySleep, todayJournal, todayMovementMinutes])
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="page-shell animate-fade-in">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-3">
-          <span className="text-4xl">💡</span>
-          <Lightbulb className="text-primary-600 dark:text-primary-400" size={32} />
-          Mindful Tips
+        <h2 className="mb-2 flex items-center gap-3 text-2xl font-bold text-heading">
+          <Lightbulb className="text-primary-600 dark:text-primary-400" size={28} />
+          Mindful tips
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-muted">
           Personalized suggestions based on your tracking data
         </p>
-        <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+        <p className="mt-2 text-sm text-faint">
           Tips are general suggestions. For professional support, visit{' '}
           <a 
             href="https://www2.hse.ie/mental-health/" 
@@ -146,43 +160,47 @@ const MindfulTips = ({ moodEntries, stressEntries, appetiteEntries, sleepEntries
 
       {/* Today's Summary */}
       <div className="glass-effect rounded-2xl p-6 card-hover">
-        <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-          <span>📊</span>
-          Today's Summary
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4">
-          <div className="text-center p-3 bg-white dark:bg-gray-700 rounded-lg">
-            <Heart className={`mx-auto mb-2 ${todayMood ? 'text-primary-600 dark:text-primary-400' : 'text-gray-300 dark:text-gray-600'}`} size={24} />
-            <p className="text-xs text-gray-600 dark:text-gray-300">Mood</p>
-            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-              {todayMood ? (todayMood.emotion?.emoji || '✓') : '—'}
+        <h3 className="mb-4 text-lg font-semibold text-heading">Today&apos;s summary</h3>
+        <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+          <div className="surface-chip rounded-xl p-3 text-center">
+            <Heart className={`mx-auto mb-2 ${todayMood ? 'text-primary-600 dark:text-primary-400' : 'text-stone-300 dark:text-slate-700'}`} size={24} />
+            <p className="text-xs text-muted">Mood</p>
+            <p className="text-sm font-semibold text-heading">
+              {todayMood ? 'Logged' : '—'}
             </p>
           </div>
-          <div className="text-center p-3 bg-white dark:bg-gray-700 rounded-lg">
-            <AlertCircle className={`mx-auto mb-2 ${todayStress ? 'text-red-600 dark:text-red-400' : 'text-gray-300 dark:text-gray-600'}`} size={24} />
-            <p className="text-xs text-gray-600 dark:text-gray-300">Stress</p>
-            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+          <div className="surface-chip rounded-xl p-3 text-center">
+            <AlertCircle className={`mx-auto mb-2 ${todayStress ? 'text-red-600 dark:text-red-400' : 'text-stone-300 dark:text-slate-700'}`} size={24} />
+            <p className="text-xs text-muted">Stress</p>
+            <p className="text-sm font-semibold text-heading">
               {todayStress ? todayStress.stressLevel : '—'}
             </p>
           </div>
-          <div className="text-center p-3 bg-white dark:bg-gray-700 rounded-lg">
-            <Moon className={`mx-auto mb-2 ${todaySleep ? 'text-blue-600 dark:text-blue-400' : 'text-gray-300 dark:text-gray-600'}`} size={24} />
-            <p className="text-xs text-gray-600 dark:text-gray-300">Sleep</p>
-            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+          <div className="surface-chip rounded-xl p-3 text-center">
+            <Moon className={`mx-auto mb-2 ${todaySleep ? 'text-blue-600 dark:text-blue-400' : 'text-stone-300 dark:text-slate-700'}`} size={24} />
+            <p className="text-xs text-muted">Sleep</p>
+            <p className="text-sm font-semibold text-heading">
               {todaySleep ? `${todaySleep.hours}h` : '—'}
             </p>
           </div>
-          <div className="text-center p-3 bg-white dark:bg-gray-700 rounded-lg">
-            <UtensilsCrossed className={`mx-auto mb-2 ${todayAppetite ? 'text-green-600 dark:text-green-400' : 'text-gray-300 dark:text-gray-600'}`} size={24} />
-            <p className="text-xs text-gray-600 dark:text-gray-300">Appetite</p>
-            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+          <div className="surface-chip rounded-xl p-3 text-center">
+            <UtensilsCrossed className={`mx-auto mb-2 ${todayAppetite ? 'text-green-600 dark:text-green-400' : 'text-stone-300 dark:text-slate-700'}`} size={24} />
+            <p className="text-xs text-muted">Appetite</p>
+            <p className="text-sm font-semibold text-heading">
               {todayAppetite ? '✓' : '—'}
             </p>
           </div>
-          <div className="text-center p-3 bg-white dark:bg-gray-700 rounded-lg">
-            <BookOpen className={`mx-auto mb-2 ${todayJournal ? 'text-purple-600 dark:text-purple-400' : 'text-gray-300 dark:text-gray-600'}`} size={24} />
-            <p className="text-xs text-gray-600 dark:text-gray-300">Journal</p>
-            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+          <div className="surface-chip rounded-xl p-3 text-center">
+            <Footprints className={`mx-auto mb-2 ${todayMovementMinutes > 0 ? 'text-teal-600 dark:text-teal-400' : 'text-stone-300 dark:text-slate-700'}`} size={24} />
+            <p className="text-xs text-muted">Movement</p>
+            <p className="text-sm font-semibold text-heading">
+              {todayMovementMinutes > 0 ? `${todayMovementMinutes}m` : '—'}
+            </p>
+          </div>
+          <div className="surface-chip rounded-xl p-3 text-center">
+            <BookOpen className={`mx-auto mb-2 ${todayJournal ? 'text-purple-600 dark:text-purple-400' : 'text-stone-300 dark:text-slate-700'}`} size={24} />
+            <p className="text-xs text-muted">Journal</p>
+            <p className="text-sm font-semibold text-heading">
               {todayJournal ? '✓' : '—'}
             </p>
           </div>
@@ -191,23 +209,20 @@ const MindfulTips = ({ moodEntries, stressEntries, appetiteEntries, sleepEntries
 
       {/* Tips */}
       <div className="glass-effect rounded-2xl p-6 card-hover">
-        <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-          <span>💡</span>
-          Personalized Tips for You
-        </h3>
+        <h3 className="mb-4 text-lg font-semibold text-heading">Personalized tips for you</h3>
         {tips.length > 0 ? (
           <div className="space-y-3">
             {tips.map((tip, index) => (
               <div
                 key={index}
-                className="p-4 bg-white dark:bg-gray-700 rounded-xl border-l-4 border-primary-400 dark:border-primary-500"
+                className="rounded-xl border-l-4 border-primary-400 bg-white/80 p-4 dark:border-primary-500 dark:bg-slate-800/60"
               >
-                <p className="text-gray-700 dark:text-gray-200">{tip}</p>
+                <p className="text-body">{tip}</p>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 dark:text-gray-300 italic">
+          <p className="text-muted italic">
             Start tracking your mood, sleep, stress, and appetite to receive personalized tips!
           </p>
         )}
@@ -215,9 +230,9 @@ const MindfulTips = ({ moodEntries, stressEntries, appetiteEntries, sleepEntries
 
       {/* Resources */}
       <div className="glass-effect rounded-2xl p-6 card-hover">
-        <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Resources & Support</h3>
+        <h3 className="mb-4 text-xl font-semibold text-heading">Resources &amp; support</h3>
         <div className="space-y-3 text-sm">
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-muted">
             If you're struggling with your mental health, remember that support is available.
           </p>
           <div className="mt-4 space-y-2">
@@ -225,10 +240,10 @@ const MindfulTips = ({ moodEntries, stressEntries, appetiteEntries, sleepEntries
               href="https://www2.hse.ie/mental-health/"
               target="_blank"
               rel="noopener noreferrer"
-              className="block p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+              className="block rounded-lg bg-primary-50 p-3 transition-colors hover:bg-primary-100 dark:bg-primary-950/40 dark:hover:bg-primary-900/30"
             >
-              <p className="font-semibold text-primary-700 dark:text-primary-300">HSE Mental Health Services</p>
-              <p className="text-xs text-gray-600 dark:text-gray-300">Information and support resources</p>
+              <p className="font-semibold text-primary-800 dark:text-primary-300">HSE Mental Health Services</p>
+              <p className="text-xs text-muted">Information and support resources</p>
             </a>
           </div>
         </div>
