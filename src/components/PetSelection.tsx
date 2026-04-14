@@ -3,6 +3,22 @@ import { Sparkles } from 'lucide-react'
 import { usePet } from '../contexts/PetContext'
 import { PetType } from '../types'
 
+const PET_OPTIONS: { id: Exclude<PetType, null>; emoji: string; label: string; subtitle: string }[] = [
+  { id: 'cat', emoji: '🐱', label: 'Cat', subtitle: 'Calm and curious companion' },
+  { id: 'dog', emoji: '🐶', label: 'Dog', subtitle: 'Energetic and loyal friend' },
+  { id: 'rabbit', emoji: '🐰', label: 'Rabbit', subtitle: 'Gentle and thoughtful' },
+  { id: 'horse', emoji: '🐴', label: 'Horse', subtitle: 'Steady and grounded' },
+  { id: 'bird', emoji: '🐦', label: 'Bird', subtitle: 'Light and expressive' },
+  { id: 'panda', emoji: '🐼', label: 'Panda', subtitle: 'Soft and peaceful' },
+  { id: 'penguin', emoji: '🐧', label: 'Penguin', subtitle: 'Resilient and social' },
+  { id: 'fox', emoji: '🦊', label: 'Fox', subtitle: 'Bright and adaptable' },
+  { id: 'turtle', emoji: '🐢', label: 'Turtle', subtitle: 'Slow, steady progress' },
+]
+
+const PET_EMOJI: Record<Exclude<PetType, null>, string> = Object.fromEntries(
+  PET_OPTIONS.map((p) => [p.id, p.emoji])
+) as Record<Exclude<PetType, null>, string>
+
 const PetSelection = () => {
   const { setPetType, setPetName, preferences } = usePet()
   // If pet type is selected but name is missing, show name input
@@ -45,43 +61,29 @@ const PetSelection = () => {
             <p className="text-center text-gray-600 dark:text-gray-400 mb-4">
               Choose a companion to help you track your mental health. Your data will be saved anonymously using your pet&apos;s name.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <button
-                onClick={() => handlePetSelect('cat')}
-                className={`p-8 rounded-2xl border-4 transition-all duration-300 hover:scale-105 ${
-                  selectedPet === 'cat'
-                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary-300'
-                }`}
-              >
-                <div className="text-6xl mb-4">🐱</div>
-                <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">Cat</h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Calm and curious companion
-                </p>
-              </button>
-
-              <button
-                onClick={() => handlePetSelect('dog')}
-                className={`p-8 rounded-2xl border-4 transition-all duration-300 hover:scale-105 ${
-                  selectedPet === 'dog'
-                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary-300'
-                }`}
-              >
-                <div className="text-6xl mb-4">🐶</div>
-                <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">Dog</h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Energetic and loyal friend
-                </p>
-              </button>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {PET_OPTIONS.map((pet) => (
+                <button
+                  key={pet.id}
+                  onClick={() => handlePetSelect(pet.id)}
+                  className={`rounded-2xl border-4 p-6 transition-all duration-300 hover:scale-[1.02] ${
+                    selectedPet === pet.id
+                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                      : 'border-gray-200 bg-white hover:border-primary-300 dark:border-gray-700 dark:bg-gray-800'
+                  }`}
+                >
+                  <div className="mb-3 text-5xl">{pet.emoji}</div>
+                  <h3 className="mb-1 text-xl font-bold text-gray-800 dark:text-gray-200">{pet.label}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{pet.subtitle}</p>
+                </button>
+              ))}
             </div>
           </div>
         ) : (
           <div className="space-y-6 animate-slide-up">
             <div className="text-center">
               <div className="text-6xl mb-4">
-                {selectedPet === 'cat' ? '🐱' : '🐶'}
+                {selectedPet ? PET_EMOJI[selectedPet] : '🌱'}
               </div>
               <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">
                 What would you like to name your {selectedPet}?
