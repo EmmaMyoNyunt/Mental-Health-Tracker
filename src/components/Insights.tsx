@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 import { format, subDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns'
-import { TrendingUp, Calendar, Heart } from 'lucide-react'
+import { TrendingUp, Calendar, Heart, Footprints } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ScatterChart, Scatter, Cell } from 'recharts'
-import { MoodEntry, JournalEntry, StressEntry, AppetiteEntry, SleepEntry } from '../types'
+import { MoodEntry, JournalEntry, StressEntry, AppetiteEntry, SleepEntry, ExerciseEntry } from '../types'
+import { useTheme } from '../contexts/ThemeContext'
 
 interface InsightsProps {
   moodEntries: MoodEntry[]
@@ -10,9 +11,21 @@ interface InsightsProps {
   stressEntries: StressEntry[]
   appetiteEntries: AppetiteEntry[]
   sleepEntries: SleepEntry[]
+  exerciseEntries: ExerciseEntry[]
 }
 
-const Insights = ({ moodEntries, journalEntries, stressEntries: _stressEntries, appetiteEntries: _appetiteEntries, sleepEntries: _sleepEntries }: InsightsProps) => {
+const Insights = ({ moodEntries, journalEntries, stressEntries: _stressEntries, appetiteEntries: _appetiteEntries, sleepEntries: _sleepEntries, exerciseEntries }: InsightsProps) => {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
+  const chartGrid = isDark ? '#334155' : '#d6d3d1'
+  const chartAxis = isDark ? '#e7e5e4' : '#57534e'
+  const tooltipStyle = {
+    backgroundColor: isDark ? '#0f172a' : '#ffffff',
+    border: isDark ? '1px solid #334155' : '1px solid #e7e5e4',
+    borderRadius: '8px',
+    padding: '8px',
+    color: isDark ? '#f5f5f4' : '#1c1917',
+  }
   const last30Days = useMemo(() => {
     const days = []
     for (let i = 29; i >= 0; i--) {
@@ -110,87 +123,92 @@ const Insights = ({ moodEntries, journalEntries, stressEntries: _stressEntries, 
     return count
   }, [moodEntries])
 
+  const movementWeekData = useMemo(() => {
+    const today = new Date()
+    const weekStart = startOfWeek(today, { weekStartsOn: 1 })
+    const weekEnd = endOfWeek(today, { weekStartsOn: 1 })
+    const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd })
+    return weekDays.map((day) => {
+      const dateStr = format(day, 'yyyy-MM-dd')
+      const minutes = exerciseEntries.filter((e) => e.date === dateStr).reduce((s, e) => s + e.minutes, 0)
+      return { day: format(day, 'EEE'), minutes }
+    })
+  }, [exerciseEntries])
+
   const chartData = last30Days.filter(d => d.mood !== null).map(d => ({
     date: d.date,
     mood: d.mood,
   }))
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="page-shell animate-fade-in">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-3">
-          <TrendingUp className="text-primary-600" size={32} />
+        <h2 className="mb-2 flex items-center gap-3 text-3xl font-bold text-heading">
+          <TrendingUp className="text-primary-600 dark:text-primary-400" size={32} />
           Insights
         </h2>
-        <p className="text-gray-600">Analyze your mental health patterns and trends</p>
+        <p className="text-muted">Patterns across mood, rest, and gentle movement</p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="glass-effect rounded-2xl p-6 card-hover">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-primary-100 rounded-xl">
-              <Heart className="text-primary-600" size={24} />
+            <div className="rounded-xl bg-primary-100 p-3 dark:bg-primary-950/40">
+              <Heart className="text-primary-600 dark:text-primary-400" size={24} />
             </div>
-            <span className="text-3xl font-bold text-gray-800">
+            <span className="text-3xl font-bold text-heading">
               {averageMood > 0 ? averageMood.toFixed(1) : '—'}
             </span>
           </div>
-          <h3 className="text-gray-600 font-medium">Average Mood</h3>
-          <p className="text-sm text-gray-500 mt-1">Across all entries</p>
+          <h3 className="font-medium text-muted">Average mood</h3>
+          <p className="mt-1 text-sm text-faint">Across all entries</p>
         </div>
 
         <div className="glass-effect rounded-2xl p-6 card-hover">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-soft-mint rounded-xl">
-              <Calendar className="text-emerald-600" size={24} />
+            <div className="p-3 bg-soft-mint rounded-xl dark:bg-emerald-950/40">
+              <Calendar className="text-emerald-600 dark:text-emerald-400" size={24} />
             </div>
-            <span className="text-3xl font-bold text-gray-800">{streak}</span>
+            <span className="text-3xl font-bold text-heading">{streak}</span>
           </div>
-          <h3 className="text-gray-600 font-medium">Day Streak</h3>
-          <p className="text-sm text-gray-500 mt-1">Consecutive tracking days</p>
+          <h3 className="font-medium text-muted">Day streak</h3>
+          <p className="mt-1 text-sm text-faint">Consecutive tracking days</p>
         </div>
 
         <div className="glass-effect rounded-2xl p-6 card-hover">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-soft-peach rounded-xl">
-              <TrendingUp className="text-orange-600" size={24} />
+            <div className="p-3 bg-soft-peach rounded-xl dark:bg-orange-950/30">
+              <TrendingUp className="text-orange-600 dark:text-orange-400" size={24} />
             </div>
-            <span className="text-3xl font-bold text-gray-800">
+            <span className="text-3xl font-bold text-heading">
               {journalEntries.length}
             </span>
           </div>
-          <h3 className="text-gray-600 font-medium">Journal Entries</h3>
-          <p className="text-sm text-gray-500 mt-1">Total reflections</p>
+          <h3 className="font-medium text-muted">Journal entries</h3>
+          <p className="mt-1 text-sm text-faint">Total reflections</p>
         </div>
       </div>
 
       {/* 30-Day Trend */}
       {chartData.length > 0 && (
         <div className="glass-effect rounded-2xl p-6 card-hover">
-          <h3 className="text-xl font-semibold text-gray-800 mb-6">30-Day Mood Trend</h3>
+          <h3 className="mb-6 text-xl font-semibold text-heading">30-day mood trend</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
               <XAxis 
                 dataKey="date" 
-                stroke="#6b7280"
-                tick={{ fontSize: 12 }}
+                stroke={chartAxis}
+                tick={{ fontSize: 12, fill: chartAxis }}
                 interval="preserveStartEnd"
               />
               <YAxis 
                 domain={[1, 5]}
-                stroke="#6b7280"
-                tick={{ fontSize: 12 }}
+                stroke={chartAxis}
+                tick={{ fontSize: 12, fill: chartAxis }}
               />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  padding: '8px'
-                }}
-              />
+              <Tooltip contentStyle={tooltipStyle} />
               <Line 
                 type="monotone" 
                 dataKey="mood" 
@@ -207,33 +225,45 @@ const Insights = ({ moodEntries, journalEntries, stressEntries: _stressEntries, 
       {/* Weekly Overview */}
       {weeklyData.some(d => d.mood > 0) && (
         <div className="glass-effect rounded-2xl p-6 card-hover">
-          <h3 className="text-xl font-semibold text-gray-800 mb-6">This Week</h3>
+          <h3 className="mb-6 text-xl font-semibold text-heading">This week — mood</h3>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
               <XAxis 
                 dataKey="day" 
-                stroke="#6b7280"
-                tick={{ fontSize: 12 }}
+                stroke={chartAxis}
+                tick={{ fontSize: 12, fill: chartAxis }}
               />
               <YAxis 
                 domain={[0, 5]}
-                stroke="#6b7280"
-                tick={{ fontSize: 12 }}
+                stroke={chartAxis}
+                tick={{ fontSize: 12, fill: chartAxis }}
               />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  padding: '8px'
-                }}
-              />
+              <Tooltip contentStyle={tooltipStyle} />
               <Bar 
                 dataKey="mood" 
                 fill="#0ea5e9" 
                 radius={[8, 8, 0, 0]}
               />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {movementWeekData.some((d) => d.minutes > 0) && (
+        <div className="glass-effect card-hover rounded-2xl p-6">
+          <h3 className="mb-2 flex items-center gap-2 text-xl font-semibold text-heading">
+            <Footprints className="text-teal-600 dark:text-teal-400" size={22} />
+            This week — movement (minutes)
+          </h3>
+          <p className="mb-6 text-sm text-muted">Total minutes logged per day — wellbeing focused, not workouts.</p>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={movementWeekData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
+              <XAxis dataKey="day" stroke={chartAxis} tick={{ fontSize: 12, fill: chartAxis }} />
+              <YAxis stroke={chartAxis} tick={{ fontSize: 12, fill: chartAxis }} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Bar dataKey="minutes" fill={isDark ? '#2dd4bf' : '#0d9488'} radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -252,22 +282,22 @@ const Insights = ({ moodEntries, journalEntries, stressEntries: _stressEntries, 
           </p>
           <ResponsiveContainer width="100%" height={400}>
             <ScatterChart>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
               <XAxis 
                 type="number"
                 dataKey="valence"
                 domain={[-2.5, 2.5]}
-                label={{ value: 'Valence (Negative ← → Positive)', position: 'insideBottom', offset: -5 }}
-                stroke="#6b7280"
-                tick={{ fontSize: 12 }}
+                label={{ value: 'Valence (Negative ← → Positive)', position: 'insideBottom', offset: -5, fill: chartAxis }}
+                stroke={chartAxis}
+                tick={{ fontSize: 12, fill: chartAxis }}
               />
               <YAxis 
                 type="number"
                 dataKey="arousal"
                 domain={[0.5, 5.5]}
-                label={{ value: 'Arousal (Low → High)', angle: -90, position: 'insideLeft' }}
-                stroke="#6b7280"
-                tick={{ fontSize: 12 }}
+                label={{ value: 'Arousal (Low → High)', angle: -90, position: 'insideLeft', fill: chartAxis }}
+                stroke={chartAxis}
+                tick={{ fontSize: 12, fill: chartAxis }}
               />
               <Tooltip 
                 cursor={{ strokeDasharray: '3 3' }}
@@ -361,7 +391,7 @@ const Insights = ({ moodEntries, journalEntries, stressEntries: _stressEntries, 
       {/* Mood Distribution */}
       {moodDistribution.some(d => d.count > 0) && (
         <div className="glass-effect rounded-2xl p-6 card-hover">
-          <h3 className="text-xl font-semibold text-gray-800 mb-6">Mood Distribution</h3>
+          <h3 className="mb-6 text-xl font-semibold text-heading">Mood distribution</h3>
           <div className="space-y-4">
             {moodDistribution.map(({ mood, count }) => {
               const total = moodDistribution.reduce((sum, d) => sum + d.count, 0)
@@ -379,12 +409,12 @@ const Insights = ({ moodEntries, journalEntries, stressEntries: _stressEntries, 
                 <div key={mood} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="font-semibold text-gray-700 w-8">{mood}</span>
-                      <span className="text-sm text-gray-600">{moodLabels[mood as keyof typeof moodLabels]}</span>
+                      <span className="w-8 font-semibold text-heading">{mood}</span>
+                      <span className="text-sm text-muted">{moodLabels[mood as keyof typeof moodLabels]}</span>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">{count} entries</span>
+                    <span className="text-sm font-medium text-heading">{count} entries</span>
                   </div>
-                  <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-3 overflow-hidden rounded-full bg-stone-200 dark:bg-night-700">
                     <div
                       className={`h-full ${moodColors[mood as keyof typeof moodColors]} transition-all duration-500 rounded-full`}
                       style={{ width: `${percentage}%` }}
@@ -399,9 +429,9 @@ const Insights = ({ moodEntries, journalEntries, stressEntries: _stressEntries, 
 
       {moodEntries.length === 0 && (
         <div className="glass-effect rounded-2xl p-12 text-center">
-          <TrendingUp className="mx-auto text-gray-300 mb-4" size={48} />
-          <p className="text-gray-500 text-lg mb-2">No data yet</p>
-          <p className="text-gray-400 text-sm">Start tracking your mood to see insights</p>
+          <TrendingUp className="mx-auto mb-4 text-stone-300 dark:text-night-600" size={48} />
+          <p className="mb-2 text-lg text-muted">No data yet</p>
+          <p className="text-sm text-faint">Start tracking your mood to see insights</p>
         </div>
       )}
     </div>
