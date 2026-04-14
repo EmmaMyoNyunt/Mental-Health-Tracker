@@ -70,11 +70,10 @@ const StressTracker = ({ stressEntries, setStressEntries }: StressTrackerProps) 
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="page-shell animate-fade-in">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-3">
-            <span className="text-4xl">😰</span>
             <AlertCircle className="text-primary-600 dark:text-primary-400" size={32} />
             Stress Tracker
           </h2>
@@ -103,13 +102,13 @@ const StressTracker = ({ stressEntries, setStressEntries }: StressTrackerProps) 
               onClick={() => setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1))}
               className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-soft-lavender/50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
             >
-              ←
+              Prev
             </button>
             <button
               onClick={() => setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1))}
               className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-soft-lavender/50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
             >
-              →
+              Next
             </button>
             <button
               onClick={() => setSelectedDate(today)}
