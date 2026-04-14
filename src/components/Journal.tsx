@@ -203,7 +203,15 @@ const Journal = ({ journalEntries, setJournalEntries }: JournalProps) => {
         <div className="glass-effect rounded-2xl p-12 text-center">
           <BookOpen className="mx-auto mb-4 text-stone-300 dark:text-slate-600" size={48} />
           <p className="mb-2 text-lg text-muted">No journal entries yet</p>
-          <p className="text-sm text-faint">Start writing to track your thoughts and feelings</p>
+          <p className="text-sm text-faint mb-4">A single line about your day is enough to get started.</p>
+          <button
+            type="button"
+            onClick={() => handleOpenModal()}
+            className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600"
+          >
+            <Plus size={18} aria-hidden />
+            Write your first entry
+          </button>
         </div>
       ) : filteredAndSorted.length === 0 ? (
         <div className="glass-effect rounded-2xl p-8 text-center">
