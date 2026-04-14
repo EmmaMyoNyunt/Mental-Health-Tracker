@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Moon, Heart, Footprints, ArrowRight, GitBranch, Sparkles, MessageCircle } from 'lucide-react'
+import { Moon, Heart, Footprints, ArrowRight, GitBranch, Sparkles } from 'lucide-react'
 
 const GardenPathSection = () => {
   const connections = [
@@ -43,24 +43,6 @@ const GardenPathSection = () => {
           MoodGarden is built around a simple idea: your wellbeing is connected. Tracking more than one area helps you
           notice patterns — like how sleep, stress, and gentle movement relate — in plain language, at your own pace.
         </p>
-        <div className="mt-5 flex gap-3 rounded-xl border border-teal-300/50 bg-teal-50/80 p-4 dark:border-teal-600/35 dark:bg-teal-950/35">
-          <MessageCircle className="mt-0.5 h-5 w-5 shrink-0 text-teal-700 dark:text-teal-300" aria-hidden />
-          <div className="text-sm text-body">
-            <p className="font-medium text-heading">AI chatbot (bottom-right)</p>
-            <p className="mt-1 text-muted">
-              Use the floating button to open the assistant. It only offers <strong className="font-semibold text-heading">basic wellbeing tips</strong> drawn from{' '}
-              <a
-                href="https://www2.hse.ie/mental-health/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary-700 underline decoration-primary-400/50 hover:text-primary-800 dark:text-primary-300"
-              >
-                HSE mental health information
-              </a>{' '}
-              that is publicly available — not personal medical advice or crisis support.
-            </p>
-          </div>
-        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-3">
