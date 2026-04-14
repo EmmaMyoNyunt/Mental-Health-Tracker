@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { format, isSameDay } from 'date-fns'
-import { Footprints, Plus, Trash2, Sparkles } from 'lucide-react'
+import { Footprints, Plus, Trash2, Sparkles, Edit2 } from 'lucide-react'
 import { ExerciseEntry, ExerciseKind } from '../types'
 
 interface ExerciseTrackerProps {
@@ -24,6 +24,7 @@ const ExerciseTracker = ({ exerciseEntries, setExerciseEntries }: ExerciseTracke
   const [kind, setKind] = useState<ExerciseKind>('walk')
   const [note, setNote] = useState('')
   const [showForm, setShowForm] = useState(false)
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null)
 
   const today = new Date()
   const dateStr = format(selectedDate, 'yyyy-MM-dd')
@@ -48,28 +49,51 @@ const ExerciseTracker = ({ exerciseEntries, setExerciseEntries }: ExerciseTracke
       .reduce((s, e) => s + e.minutes, 0)
   }, [exerciseEntries])
 
-  const addEntry = () => {
+  const saveEntry = () => {
     const m = Math.min(180, Math.max(1, Math.round(minutes)))
-    const entry: ExerciseEntry = {
-      id: crypto.randomUUID(),
-      date: dateStr,
-      minutes: m,
-      kind,
-      note: note.trim() || undefined,
+    if (editingEntryId) {
+      setExerciseEntries((prev) =>
+        prev.map((e) =>
+          e.id === editingEntryId
+            ? { ...e, minutes: m, kind, note: note.trim() || undefined }
+            : e
+        )
+      )
+      setEditingEntryId(null)
+    } else {
+      const entry: ExerciseEntry = {
+        id: crypto.randomUUID(),
+        date: dateStr,
+        minutes: m,
+        kind,
+        note: note.trim() || undefined,
+      }
+      setExerciseEntries((prev) => [...prev, entry])
     }
-    setExerciseEntries((prev) => [...prev, entry])
     setNote('')
     setShowForm(false)
   }
 
+  const editEntry = (entry: ExerciseEntry) => {
+    setEditingEntryId(entry.id)
+    setMinutes(entry.minutes)
+    setKind(entry.kind)
+    setNote(entry.note || '')
+    setShowForm(true)
+  }
+
   const removeEntry = (id: string) => {
     setExerciseEntries((prev) => prev.filter((e) => e.id !== id))
+    if (editingEntryId === id) {
+      setEditingEntryId(null)
+      setShowForm(false)
+    }
   }
 
   return (
     <div className="page-shell animate-fade-in">
-      <div className="relative overflow-hidden rounded-2xl border border-amber-200/70 bg-gradient-to-br from-teal-50/90 via-stone-50 to-cyan-50/80 p-6 shadow-card dark:border-slate-700/80 dark:from-slate-800/90 dark:via-slate-900 dark:to-indigo-950/50 dark:shadow-card-dark">
-        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary-400/20 dark:bg-primary-500/10 blur-2xl animate-float-soft pointer-events-none" />
+      <div className="relative overflow-hidden rounded-2xl border-2 border-teal-400/45 bg-gradient-to-br from-teal-100/95 via-emerald-100/85 to-sky-100/75 p-6 shadow-lg shadow-teal-900/10 ring-1 ring-white/50 dark:border-teal-500/35 dark:bg-gradient-to-br dark:from-slate-950/95 dark:via-teal-950/65 dark:to-cyan-950/45 dark:shadow-lg dark:shadow-teal-950/25 dark:ring-1 dark:ring-cyan-400/15">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary-400/20 blur-2xl animate-float-soft pointer-events-none dark:bg-teal-400/18" />
         <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-2xl font-bold text-heading flex items-center gap-3">
@@ -140,7 +164,9 @@ const ExerciseTracker = ({ exerciseEntries, setExerciseEntries }: ExerciseTracke
 
         {showForm && (
           <div className="mb-6 rounded-2xl border border-teal-200/60 bg-white/60 p-5 dark:border-slate-700 dark:bg-slate-800/50">
-            <p className="mb-3 text-sm font-medium text-heading">What did you do?</p>
+            <p className="mb-3 text-sm font-medium text-heading">
+              {editingEntryId ? 'Edit movement log' : 'What did you do?'}
+            </p>
             <div className="mb-4 flex flex-wrap gap-2">
               {KIND_OPTIONS.map((opt) => (
                 <button
@@ -199,14 +225,18 @@ const ExerciseTracker = ({ exerciseEntries, setExerciseEntries }: ExerciseTracke
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={addEntry}
+                onClick={saveEntry}
                 className="rounded-xl bg-teal-600 px-5 py-2.5 font-medium text-white hover:bg-teal-700 dark:bg-teal-500 dark:hover:bg-teal-400"
               >
-                Save entry
+                {editingEntryId ? 'Save changes' : 'Save entry'}
               </button>
               <button
                 type="button"
-                onClick={() => setShowForm(false)}
+                onClick={() => {
+                  setShowForm(false)
+                  setEditingEntryId(null)
+                  setNote('')
+                }}
                 className="rounded-xl px-5 py-2.5 text-muted hover:bg-white/50 dark:hover:bg-slate-800/80"
               >
                 Cancel
@@ -234,6 +264,14 @@ const ExerciseTracker = ({ exerciseEntries, setExerciseEntries }: ExerciseTracke
                       {e.note && <p className="text-sm text-muted">{e.note}</p>}
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => editEntry(e)}
+                    className="rounded-lg p-2 text-primary-600 transition hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-950/30"
+                    aria-label="Edit entry"
+                  >
+                    <Edit2 size={18} />
+                  </button>
                   <button
                     type="button"
                     onClick={() => removeEntry(e.id)}
