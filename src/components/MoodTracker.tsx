@@ -88,11 +88,10 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="page-shell animate-fade-in">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-3">
-            <span className="text-4xl">😊</span>
             <Heart className="text-primary-600 dark:text-primary-400" size={32} />
             Mood Tracker
           </h2>
@@ -121,13 +120,13 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
               onClick={() => setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1))}
               className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-soft-lavender/50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
             >
-              ←
+              Prev
             </button>
             <button
               onClick={() => setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1))}
               className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-soft-lavender/50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
             >
-              →
+              Next
             </button>
             <button
               onClick={() => setSelectedDate(today)}
@@ -186,7 +185,7 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
                 {displayEmotions.length > 0 && (
                   <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-0.5">
                     {displayEmotions.slice(0, 2).map((em, idx) => (
-                      <span key={idx} className="text-xs">{em.emoji}</span>
+                      <span key={idx} className="text-[10px] font-medium">{em.label.slice(0, 1)}</span>
                     ))}
                   </div>
                 )}
@@ -218,7 +217,6 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
                         key={emotionId}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg ${getColorClasses(emotion.color || 'gray')}`}
                       >
-                        <span className="text-xl">{emotion.emoji}</span>
                         <span className="font-semibold">{emotion.label}</span>
                         <button
                           onClick={() => handleRemoveEmotion(emotionId)}
@@ -245,11 +243,11 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >
-                  {color === 'yellow' && '😊 Happy'}
-                  {color === 'red' && '😰 Stressed'}
-                  {color === 'green' && '😌 Calm'}
-                  {color === 'blue' && '😔 Low'}
-                  {color === 'gray' && '😐 Neutral'}
+                  {color === 'yellow' && 'Positive / High Energy'}
+                  {color === 'red' && 'Stressed / Activated'}
+                  {color === 'green' && 'Calm / Positive'}
+                  {color === 'blue' && 'Low / Negative'}
+                  {color === 'gray' && 'Neutral'}
                 </button>
               ))}
             </div>
@@ -276,7 +274,7 @@ const MoodTracker = ({ moodEntries, setMoodEntries }: MoodTrackerProps) => {
                         : `${getColorClasses(emotion.color || 'gray')} opacity-70 hover:opacity-100 hover:scale-105`
                     }`}
                   >
-                    <div className="text-3xl mb-2">{emotion.emoji}</div>
+                    <div className="text-xl mb-2 font-semibold">{emotion.label.slice(0, 1)}</div>
                     <div className="text-sm font-semibold">{emotion.label}</div>
                   </button>
                 )
