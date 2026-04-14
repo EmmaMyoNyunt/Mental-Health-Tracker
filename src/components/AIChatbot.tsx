@@ -162,7 +162,7 @@ const AIChatbot = () => {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex h-[600px] w-96 flex-col rounded-2xl border border-amber-200/80 bg-sand-50 shadow-2xl dark:border-night-600 dark:bg-night-900">
+    <div className="fixed bottom-6 right-6 z-50 flex h-[600px] w-96 flex-col rounded-2xl border border-amber-200/80 bg-sand-50 shadow-2xl dark:border-emerald-500/30 dark:bg-gradient-to-b dark:from-slate-950 dark:via-slate-900 dark:to-emerald-950/50">
       {/* Header */}
       <div className="flex items-center justify-between rounded-t-2xl border-b border-white/20 bg-primary-600 p-4 text-white dark:border-night-700/50 dark:bg-primary-600">
         <div className="flex items-center gap-2">
@@ -223,7 +223,7 @@ const AIChatbot = () => {
       </div>
 
       {/* Input */}
-      <div className="border-t border-amber-200/60 p-4 dark:border-night-600">
+      <div className="border-t border-amber-200/60 p-4 dark:border-emerald-500/20">
         <div className="flex gap-2">
           <textarea
             value={input}
