@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { format, subDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns'
 import { TrendingUp, Calendar, Heart, Footprints } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ScatterChart, Scatter, Cell } from 'recharts'
@@ -430,8 +431,14 @@ const Insights = ({ moodEntries, journalEntries, stressEntries: _stressEntries, 
       {moodEntries.length === 0 && (
         <div className="glass-effect rounded-2xl p-12 text-center">
           <TrendingUp className="mx-auto mb-4 text-stone-300 dark:text-night-600" size={48} />
-          <p className="mb-2 text-lg text-muted">No data yet</p>
-          <p className="text-sm text-faint">Start tracking your mood to see insights</p>
+          <p className="mb-2 text-lg text-muted">No mood data yet</p>
+          <p className="text-sm text-faint mb-4">Charts and trends appear after you log how you&apos;re feeling.</p>
+          <Link
+            to="/mood"
+            className="inline-flex items-center justify-center rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600"
+          >
+            Log mood to see patterns here
+          </Link>
         </div>
       )}
     </div>
