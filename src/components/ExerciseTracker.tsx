@@ -125,7 +125,14 @@ const ExerciseTracker = ({ exerciseEntries, setExerciseEntries }: ExerciseTracke
         <div className="glass-effect rounded-2xl p-6 card-hover xl:col-span-7">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-xl text-heading">{format(selectedDate, 'EEEE, MMMM d, yyyy')}</h3>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="date"
+              value={dateStr}
+              onChange={(e) => setSelectedDate(new Date(`${e.target.value}T12:00:00`))}
+              className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 dark:border-slate-600 dark:bg-slate-800 dark:text-stone-100"
+              aria-label="Select date"
+            />
             <button
               type="button"
               onClick={() => setSelectedDate(new Date(selectedDate.getTime() - 86400000))}
