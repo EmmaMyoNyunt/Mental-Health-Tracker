@@ -55,11 +55,13 @@ export interface MealEntry {
 
 export interface JournalEntry {
   id: string
-  date: string
+  date: string // yyyy-MM-dd (calendar day for this entry)
   title: string
   content: string
   mood?: MoodLevel
   tags?: string[]
+  /** ISO timestamp so multiple entries on the same day sort consistently */
+  createdAt?: string
 }
 
 export interface UserPreferences {
@@ -89,6 +91,8 @@ export interface TodoTask {
   title: string
   description?: string
   importance: 'low' | 'medium' | 'high'
+  dueDate?: string // yyyy-MM-dd
+  dueTime?: string // HH:mm
   completed: boolean
   createdAt: string
   completedAt?: string
@@ -106,5 +110,14 @@ export interface ExerciseEntry {
   minutes: number
   kind: ExerciseKind
   note?: string
+}
+
+/** Personal milestones and reminders (birthdays, holidays, exams, etc.) — separate from the wellness data calendar. */
+export interface ImportantDayEntry {
+  id: string
+  title: string
+  date: string // yyyy-MM-dd
+  time?: string // HH:mm
+  description?: string
 }
 
