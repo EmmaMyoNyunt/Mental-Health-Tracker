@@ -42,7 +42,7 @@ const Settings = () => {
           localStorage.removeItem(key)
         }
       })
-      alert('All data has been reset! 🌸')
+      alert('All data has been reset.')
       window.location.reload()
     } else {
       setShowResetConfirm(true)
@@ -50,10 +50,9 @@ const Settings = () => {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in max-w-3xl">
+    <div className="page-shell max-w-4xl animate-fade-in">
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-3">
-          <span className="text-4xl">⚙️</span>
           <SettingsIcon className="text-primary-600 dark:text-primary-400" size={32} />
           Settings
         </h2>
@@ -74,10 +73,10 @@ const Settings = () => {
           </div>
           <button
             onClick={toggleTheme}
-            className={`px-6 py-3 rounded-xl transition-all duration-200 flex items-center gap-2 ${
+            className={`flex items-center gap-2 rounded-xl px-6 py-3 transition-all duration-200 ${
               theme === 'dark'
-                ? 'bg-gray-700 text-white hover:bg-gray-600'
-                : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                ? 'bg-slate-700 text-stone-100 hover:bg-slate-600'
+                : 'bg-amber-100 text-amber-950 hover:bg-amber-200/90'
             }`}
           >
             {theme === 'dark' ? (
@@ -200,7 +199,6 @@ const Settings = () => {
       {/* AI Chatbot Settings */}
       <div className="glass-effect rounded-2xl p-6 card-hover">
         <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-          <span>🤖</span>
           AI Chatbot Settings
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
@@ -250,7 +248,7 @@ const Settings = () => {
       {/* About */}
       <div className="glass-effect rounded-2xl p-6 card-hover">
         <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
-          About MoodGarden 🌱
+          About MoodGarden
         </h3>
         <p className="text-gray-600 dark:text-gray-300 mb-2">
           MoodGarden is your personal mental health tracking companion. Tend to your garden by tracking your mood, stress, appetite, and journaling your thoughts.
