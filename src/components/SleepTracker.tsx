@@ -98,7 +98,14 @@ const SleepTracker = ({ sleepEntries, setSleepEntries }: SleepTrackerProps) => {
           <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
             {format(selectedDate, 'EEEE, MMMM d, yyyy')}
           </h3>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="date"
+              value={dateStr}
+              onChange={(e) => setSelectedDate(new Date(`${e.target.value}T12:00:00`))}
+              className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 dark:border-slate-600 dark:bg-slate-800 dark:text-stone-100"
+              aria-label="Select date"
+            />
             <button
               onClick={() => setSelectedDate(new Date(selectedDate.getTime() - 24 * 60 * 60 * 1000))}
               className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-soft-lavender/50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
