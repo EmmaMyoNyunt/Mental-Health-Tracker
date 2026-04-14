@@ -291,7 +291,9 @@ const ImportantDaysCalendar = ({ importantDays, setImportantDays }: ImportantDay
           <div className="glass-effect card-hover rounded-2xl p-5">
             <h3 className="mb-3 text-lg font-semibold text-heading">Upcoming</h3>
             {upcomingSorted.length === 0 ? (
-              <p className="text-muted text-sm">No upcoming key dates.</p>
+              <p className="text-muted text-sm">
+                No upcoming key dates. Pick a day on the calendar and use &quot;+ Add on this day&quot; to pin exams, deadlines, or events you care about.
+              </p>
             ) : (
               <ul className="space-y-2">
                 {upcomingSorted.map((e) => (
