@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { isSameDay, format } from 'date-fns'
 import { Lightbulb, Heart, Moon, UtensilsCrossed, AlertCircle, BookOpen, Footprints } from 'lucide-react'
-import CrisisSupportBlock from './CrisisSupportBlock'
 import { MoodEntry, StressEntry, AppetiteEntry, SleepEntry, JournalEntry, ExerciseEntry } from '../types'
 
 interface MindfulTipsProps {
@@ -150,10 +149,6 @@ const MindfulTips = ({ moodEntries, stressEntries, appetiteEntries, sleepEntries
         <p className="mt-2 text-sm text-faint">
           Tips are general suggestions, not medical advice.
         </p>
-      </div>
-
-      <div className="mb-6">
-        <CrisisSupportBlock />
       </div>
 
       {/* Today's Summary */}
