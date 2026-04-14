@@ -78,6 +78,7 @@ const StressTracker = ({ stressEntries, setStressEntries }: StressTrackerProps) 
             Stress Tracker
           </h2>
           <p className="text-gray-600 dark:text-gray-400">Monitor your stress levels daily</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Tip: click any date to edit that day&apos;s stress entry.</p>
         </div>
         <button
           onClick={() => {
