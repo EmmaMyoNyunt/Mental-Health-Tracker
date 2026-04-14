@@ -35,15 +35,18 @@ const Sidebar = () => {
 
       {/* Top Navbar */}
       <header className="fixed left-0 top-0 z-40 hidden w-full border-b border-emerald-400/40 bg-gradient-to-r from-white/85 via-emerald-50/65 to-sky-50/55 shadow-sm shadow-emerald-900/10 backdrop-blur-xl dark:border-slate-700/70 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 dark:shadow-none dark:backdrop-blur-xl lg:block">
-        <div className="mx-auto flex h-16 w-full max-w-[1920px] items-center gap-5 px-5 lg:gap-6 lg:px-10">
-          <div className="flex shrink-0 items-center gap-2">
+        <div className="mx-auto flex min-h-16 w-full max-w-[1920px] items-center gap-3 px-4 py-2 lg:gap-5 lg:px-8 xl:gap-6 xl:px-10">
+          <div className="flex min-w-0 shrink-0 items-center gap-2">
             <span className="text-xl">🌱</span>
-            <h1 className="bg-gradient-to-r from-primary-600 via-teal-600 to-emerald-600 bg-clip-text text-xl font-bold text-transparent">
+            <h1 className="bg-gradient-to-r from-primary-600 via-teal-600 to-emerald-600 bg-clip-text text-lg font-bold text-transparent xl:text-xl">
               MoodGarden
             </h1>
           </div>
 
-          <nav className="flex min-w-0 flex-1 flex-nowrap items-center justify-between gap-x-2 overflow-x-auto overflow-y-hidden px-1 py-1 sm:gap-x-3 md:gap-x-4 lg:gap-x-5 xl:gap-x-6 [&::-webkit-scrollbar]:h-1">
+          <nav
+            className="flex min-h-[44px] min-w-0 flex-1 flex-nowrap items-center justify-start gap-x-1 overflow-x-auto overflow-y-visible overscroll-x-contain px-0.5 py-1 sm:gap-x-2 md:gap-x-2.5 lg:gap-x-2 xl:gap-x-3 [&::-webkit-scrollbar]:h-1.5"
+            aria-label="Primary"
+          >
             {navItems.map((item) => {
               const Icon = item.icon
               const isActive = location.pathname === item.path
@@ -51,36 +54,39 @@ const Sidebar = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-2 text-xs transition xl:gap-2 xl:px-3 xl:text-sm ${
+                  title={item.label}
+                  className={`flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-2 text-xs transition xl:gap-2 xl:px-2.5 xl:text-sm ${
                     isActive
                       ? 'bg-primary-100 text-primary-800 dark:bg-emerald-950/60 dark:text-emerald-100 dark:ring-1 dark:ring-emerald-400/30'
                       : 'text-stone-600 hover:bg-white/70 hover:text-primary-700 dark:text-stone-200 dark:hover:bg-white/5 dark:hover:text-stone-50'
                   }`}
                 >
                   <Icon size={16} className="shrink-0" />
-                  <span className="hidden whitespace-nowrap 2xl:inline">{item.label}</span>
+                  {/* lg+ matches desktop nav visibility; labels stay visible when zooming (avoids 2xl-only text) */}
+                  <span className="hidden max-w-[9rem] truncate whitespace-nowrap lg:inline">{item.label}</span>
                 </Link>
               )
             })}
           </nav>
 
-          <div className="ml-1 flex shrink-0 items-center gap-2">
+          <div className="ml-auto flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-2">
             {preferences.petName ? (
-              <div className="surface-chip flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-muted">
-                <span>{preferences.petType === 'cat' ? '🐱' : '🐶'}</span>
-                <span>{preferences.petName}</span>
+              <div className="surface-chip hidden max-w-[10rem] items-center gap-2 truncate rounded-lg px-2 py-1.5 text-sm text-muted sm:flex">
+                <span className="shrink-0">{preferences.petType === 'cat' ? '🐱' : '🐶'}</span>
+                <span className="truncate">{preferences.petName}</span>
               </div>
             ) : null}
             <Link
               to="/settings"
-              className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm transition ${
+              title="Settings"
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-2.5 py-2 text-sm transition sm:px-3 ${
                 location.pathname === '/settings'
                   ? 'bg-primary-100 text-primary-800 dark:bg-emerald-950/60 dark:text-emerald-100 dark:ring-1 dark:ring-emerald-400/30'
                   : 'surface-chip text-muted hover:text-heading dark:text-stone-200'
               }`}
             >
               <Settings size={16} />
-              <span className="hidden 2xl:inline">Settings</span>
+              <span className="hidden lg:inline">Settings</span>
             </Link>
           </div>
         </div>
