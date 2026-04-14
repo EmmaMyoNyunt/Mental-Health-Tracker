@@ -195,3 +195,44 @@
     @apply grid grid-cols-1 gap-4 xl:grid-cols-12;
   }
 }
+
+/* Reduced motion: system preference and in-app “Reduce motion” (html.reduce-motion) */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-scale-in,
+  .animate-slide-up,
+  .animate-float-soft {
+    animation: none !important;
+  }
+
+  .animate-bounce {
+    animation: none !important;
+  }
+
+  .card-hover {
+    transition-duration: 0.01ms !important;
+  }
+
+  .card-hover:hover {
+    transform: none !important;
+  }
+}
+
+html.reduce-motion .animate-fade-in,
+html.reduce-motion .animate-scale-in,
+html.reduce-motion .animate-slide-up,
+html.reduce-motion .animate-float-soft {
+  animation: none !important;
+}
+
+html.reduce-motion .animate-bounce {
+  animation: none !important;
+}
+
+html.reduce-motion .card-hover {
+  transition-duration: 0.01ms !important;
+}
+
+html.reduce-motion .card-hover:hover {
+  transform: none !important;
+}
