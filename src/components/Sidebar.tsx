@@ -18,6 +18,19 @@ import {
   Footprints,
 } from 'lucide-react'
 import { usePet } from '../contexts/PetContext'
+import { PetType } from '../types'
+
+const PET_EMOJI: Record<Exclude<PetType, null>, string> = {
+  cat: '🐱',
+  dog: '🐶',
+  rabbit: '🐰',
+  horse: '🐴',
+  bird: '🐦',
+  panda: '🐼',
+  penguin: '🐧',
+  fox: '🦊',
+  turtle: '🐢',
+}
 
 const Sidebar = () => {
   const location = useLocation()
@@ -91,7 +104,7 @@ const Sidebar = () => {
 
         {preferences.petName ? (
           <div className="ml-auto flex min-w-0 max-w-[45vw] items-center gap-1.5 truncate rounded-lg border border-emerald-400/40 bg-white/90 px-2 py-1.5 text-xs text-stone-700 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-stone-200 sm:max-w-xs sm:text-sm">
-            <span className="shrink-0">{preferences.petType === 'cat' ? '🐱' : '🐶'}</span>
+            <span className="shrink-0">{preferences.petType ? PET_EMOJI[preferences.petType] : '🌱'}</span>
             <span className="truncate">{preferences.petName}</span>
           </div>
         ) : null}
