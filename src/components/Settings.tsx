@@ -1,11 +1,14 @@
 import { useState } from 'react'
-import { Settings as SettingsIcon, Moon, Sun, User, RotateCcw } from 'lucide-react'
+import { Settings as SettingsIcon, Moon, Sun, User, RotateCcw, Sparkles } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
+import { useMotionPreference, type MotionPreference } from '../contexts/MotionPreferenceContext'
 import { usePet } from '../contexts/PetContext'
 import { PetType } from '../types'
+import CrisisSupportBlock from './CrisisSupportBlock'
 
 const Settings = () => {
   const { theme, toggleTheme } = useTheme()
+  const { preference: motionPreference, setPreference: setMotionPreference } = useMotionPreference()
   const { preferences, setPetType, setPetName } = usePet()
   const [petNameInput, setPetNameInput] = useState(preferences.petName || '')
   const [showResetConfirm, setShowResetConfirm] = useState(false)
@@ -15,7 +18,12 @@ const Settings = () => {
     if (confirm('Changing your pet will reset all your data and require you to name your new pet. Are you sure?')) {
       // Clear all localStorage data for this pet
       Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('moodGarden_') && !key.includes('preferences') && !key.includes('theme')) {
+        if (
+          key.startsWith('moodGarden_') &&
+          !key.includes('preferences') &&
+          !key.includes('theme') &&
+          !key.includes('motion_preference')
+        ) {
           localStorage.removeItem(key)
         }
       })
@@ -38,7 +46,12 @@ const Settings = () => {
   const handleResetData = () => {
     if (showResetConfirm) {
       Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('moodGarden_') && !key.includes('preferences') && !key.includes('theme')) {
+        if (
+          key.startsWith('moodGarden_') &&
+          !key.includes('preferences') &&
+          !key.includes('theme') &&
+          !key.includes('motion_preference')
+        ) {
           localStorage.removeItem(key)
         }
       })
@@ -59,38 +72,76 @@ const Settings = () => {
         <p className="text-gray-600 dark:text-gray-400">Manage your MoodGarden preferences</p>
       </div>
 
+      <div className="mb-6">
+        <CrisisSupportBlock />
+      </div>
+
       {/* Theme Settings */}
       <div className="glass-effect rounded-2xl p-6 card-hover">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-              {theme === 'dark' ? <Moon size={24} /> : <Sun size={24} />}
-              Appearance
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Switch between light and dark mode
-            </p>
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                {theme === 'dark' ? <Moon size={24} /> : <Sun size={24} />}
+                Appearance
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Switch between light and dark mode
+              </p>
+            </div>
+            <button
+              onClick={toggleTheme}
+              className={`flex shrink-0 items-center gap-2 rounded-xl px-6 py-3 transition-all duration-200 ${
+                theme === 'dark'
+                  ? 'bg-slate-700 text-stone-100 hover:bg-slate-600'
+                  : 'bg-amber-100 text-amber-950 hover:bg-amber-200/90'
+              }`}
+            >
+              {theme === 'dark' ? (
+                <>
+                  <Moon size={20} />
+                  Dark Mode
+                </>
+              ) : (
+                <>
+                  <Sun size={20} />
+                  Light Mode
+                </>
+              )}
+            </button>
           </div>
-          <button
-            onClick={toggleTheme}
-            className={`flex items-center gap-2 rounded-xl px-6 py-3 transition-all duration-200 ${
-              theme === 'dark'
-                ? 'bg-slate-700 text-stone-100 hover:bg-slate-600'
-                : 'bg-amber-100 text-amber-950 hover:bg-amber-200/90'
-            }`}
-          >
-            {theme === 'dark' ? (
-              <>
-                <Moon size={20} />
-                Dark Mode
-              </>
-            ) : (
-              <>
-                <Sun size={20} />
-                Light Mode
-              </>
-            )}
-          </button>
+
+          <div className="border-t border-stone-200/80 pt-6 dark:border-slate-700/80">
+            <div className="mb-3 flex items-center gap-2">
+              <Sparkles size={22} className="text-teal-600 dark:text-teal-400" />
+              <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Motion</h4>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              Respects your system &quot;reduce motion&quot; setting by default. You can also choose here.
+            </p>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Animation preference">
+              {(
+                [
+                  { id: 'system' as MotionPreference, label: 'Match system' },
+                  { id: 'reduce' as MotionPreference, label: 'Reduce motion' },
+                  { id: 'allow' as MotionPreference, label: 'Full motion' },
+                ] as const
+              ).map(({ id, label }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setMotionPreference(id)}
+                  className={`rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${
+                    motionPreference === id
+                      ? 'bg-primary-600 text-white dark:bg-primary-500'
+                      : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
