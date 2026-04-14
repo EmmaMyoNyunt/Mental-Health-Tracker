@@ -5,12 +5,23 @@ import { usePet } from '../contexts/PetContext'
 import { PetType } from '../types'
 import PrivacyStrip from './PrivacyStrip'
 
+const PET_OPTIONS: { id: Exclude<PetType, null>; emoji: string; label: string }[] = [
+  { id: 'cat', emoji: '🐱', label: 'Cat' },
+  { id: 'dog', emoji: '🐶', label: 'Dog' },
+  { id: 'rabbit', emoji: '🐰', label: 'Rabbit' },
+  { id: 'horse', emoji: '🐴', label: 'Horse' },
+  { id: 'bird', emoji: '🐦', label: 'Bird' },
+  { id: 'panda', emoji: '🐼', label: 'Panda' },
+  { id: 'penguin', emoji: '🐧', label: 'Penguin' },
+  { id: 'fox', emoji: '🦊', label: 'Fox' },
+  { id: 'turtle', emoji: '🐢', label: 'Turtle' },
+]
+
 const Settings = () => {
   const { theme, toggleTheme } = useTheme()
   const { preferences, setPetType, setPetName } = usePet()
   const [petNameInput, setPetNameInput] = useState(preferences.petName || '')
   const [showResetConfirm, setShowResetConfirm] = useState(false)
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('moodGarden_openai_key') || '')
 
   const handlePetChange = (pet: PetType) => {
     if (confirm('Changing your pet will reset all your data and require you to name your new pet. Are you sure?')) {
@@ -133,30 +144,21 @@ const Settings = () => {
             <label className="mb-3 block text-sm font-medium text-stone-700 dark:text-stone-200">
               Change Pet (this will reset all data)
             </label>
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handlePetChange('cat')}
-                className={`rounded-xl border-4 p-6 transition-all duration-300 ${
-                  preferences.petType === 'cat'
-                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30'
-                    : 'border-stone-200 bg-white hover:border-primary-300 dark:border-slate-600 dark:bg-slate-800 dark:hover:border-primary-500/60'
-                }`}
-              >
-                <div className="mb-2 text-5xl">🐱</div>
-                <p className="font-semibold text-stone-900 dark:text-stone-50">Cat</p>
-              </button>
-
-              <button
-                onClick={() => handlePetChange('dog')}
-                className={`rounded-xl border-4 p-6 transition-all duration-300 ${
-                  preferences.petType === 'dog'
-                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30'
-                    : 'border-stone-200 bg-white hover:border-primary-300 dark:border-slate-600 dark:bg-slate-800 dark:hover:border-primary-500/60'
-                }`}
-              >
-                <div className="mb-2 text-5xl">🐶</div>
-                <p className="font-semibold text-stone-900 dark:text-stone-50">Dog</p>
-              </button>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+              {PET_OPTIONS.map((pet) => (
+                <button
+                  key={pet.id}
+                  onClick={() => handlePetChange(pet.id)}
+                  className={`rounded-xl border-4 p-4 transition-all duration-300 ${
+                    preferences.petType === pet.id
+                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30'
+                      : 'border-stone-200 bg-white hover:border-primary-300 dark:border-slate-600 dark:bg-slate-800 dark:hover:border-primary-500/60'
+                  }`}
+                >
+                  <div className="mb-1 text-4xl">{pet.emoji}</div>
+                  <p className="text-sm font-semibold text-stone-900 dark:text-stone-50">{pet.label}</p>
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -199,55 +201,6 @@ const Settings = () => {
             Reset All Data
           </button>
         )}
-      </div>
-
-      {/* AI Chatbot Settings */}
-      <div className="glass-effect rounded-2xl p-6 card-hover">
-        <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold text-stone-900 dark:text-stone-50">
-          AI Chatbot Settings
-        </h3>
-        <p className="mb-4 text-sm text-stone-600 dark:text-stone-300">
-          Optionally add your OpenAI API key for enhanced AI responses. Without a key, the chatbot will use basic rule-based responses.
-        </p>
-        <div className="space-y-3">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-stone-700 dark:text-stone-200">
-              OpenAI API Key (optional)
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="password"
-                value={apiKey}
-                onChange={(e) => {
-                  const value = e.target.value
-                  setApiKey(value)
-                  if (value.trim()) {
-                    localStorage.setItem('moodGarden_openai_key', value.trim())
-                  } else {
-                    localStorage.removeItem('moodGarden_openai_key')
-                  }
-                }}
-                placeholder="sk-..."
-                className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder:text-stone-400 focus:border-transparent focus:ring-2 focus:ring-primary-500 dark:border-slate-600 dark:bg-slate-800 dark:text-stone-100 dark:placeholder:text-stone-500"
-              />
-              <button
-                onClick={() => {
-                  setApiKey('')
-                  localStorage.removeItem('moodGarden_openai_key')
-                }}
-                className="rounded-xl border border-stone-300 px-4 py-3 text-stone-800 transition-colors hover:bg-stone-50 dark:border-slate-600 dark:text-stone-200 dark:hover:bg-slate-800"
-              >
-                Clear
-              </button>
-            </div>
-            <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
-              Your API key is stored locally and never shared. Get one at{' '}
-              <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline">
-                OpenAI
-              </a>
-            </p>
-          </div>
-        </div>
       </div>
 
       {/* About */}
