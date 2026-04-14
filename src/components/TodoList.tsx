@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { format } from 'date-fns'
-import { CheckCircle2, Circle, Plus, Trash2, Star, StarOff } from 'lucide-react'
+import { CheckCircle2, Circle, Plus, Trash2, Star, StarOff, Edit2 } from 'lucide-react'
 import { TodoTask } from '../types'
 
 interface TodoListProps {
@@ -8,16 +8,45 @@ interface TodoListProps {
   setTodos: (todos: TodoTask[] | ((prev: TodoTask[]) => TodoTask[])) => void
 }
 
+/** Newest created first (used for tasks with no due date). */
+const sortByCreatedAtDesc = (a: TodoTask, b: TodoTask) => {
+  const ta = new Date(a.createdAt).getTime()
+  const tb = new Date(b.createdAt).getTime()
+  const safeA = Number.isNaN(ta) ? 0 : ta
+  const safeB = Number.isNaN(tb) ? 0 : tb
+  return safeB - safeA
+}
+
+/** Soonest due first; optional time refines ordering. Tasks without a due date sort last (newest created first among those). */
+const getDueTimestamp = (task: TodoTask): number | null => {
+  if (!task.dueDate) return null
+  const timePart = task.dueTime && task.dueTime.length > 0 ? task.dueTime : '00:00:00'
+  const ms = new Date(`${task.dueDate}T${timePart}`).getTime()
+  return Number.isNaN(ms) ? null : ms
+}
+
+const sortByDueDateAsc = (a: TodoTask, b: TodoTask) => {
+  const da = getDueTimestamp(a)
+  const db = getDueTimestamp(b)
+  if (da != null && db != null) return da - db
+  if (da != null && db === null) return -1
+  if (da === null && db != null) return 1
+  return sortByCreatedAtDesc(a, b)
+}
+
 const TodoList = ({ todos, setTodos }: TodoListProps) => {
   const [showAddModal, setShowAddModal] = useState(false)
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [newTaskDescription, setNewTaskDescription] = useState('')
   const [newTaskImportance, setNewTaskImportance] = useState<'low' | 'medium' | 'high'>('medium')
+  const [newTaskDueDate, setNewTaskDueDate] = useState('')
+  const [newTaskDueTime, setNewTaskDueTime] = useState('')
 
-  const activeTasks = todos.filter(t => !t.completed).sort((a, b) => {
-    const importanceOrder = { high: 3, medium: 2, low: 1 }
-    return importanceOrder[b.importance] - importanceOrder[a.importance]
-  })
+  const activeTasks = todos.filter(t => !t.completed)
+  const highPriorityTasks = activeTasks.filter(t => t.importance === 'high').sort(sortByDueDateAsc)
+  const mediumPriorityTasks = activeTasks.filter(t => t.importance === 'medium').sort(sortByDueDateAsc)
+  const lowPriorityTasks = activeTasks.filter(t => t.importance === 'low').sort(sortByDueDateAsc)
 
   const completedTasks = todos.filter(t => t.completed).sort((a, b) => {
     const dateA = new Date(a.completedAt || a.createdAt).getTime()
@@ -25,23 +54,62 @@ const TodoList = ({ todos, setTodos }: TodoListProps) => {
     return dateB - dateA
   })
 
-  const handleAddTask = () => {
-    if (!newTaskTitle.trim()) return
-
-    const newTask: TodoTask = {
-      id: crypto.randomUUID(),
-      title: newTaskTitle.trim(),
-      description: newTaskDescription.trim() || undefined,
-      importance: newTaskImportance,
-      completed: false,
-      createdAt: format(new Date(), 'yyyy-MM-dd'),
-    }
-
-    setTodos(prev => [...prev, newTask])
+  const resetTaskForm = () => {
     setNewTaskTitle('')
     setNewTaskDescription('')
     setNewTaskImportance('medium')
+    setNewTaskDueDate('')
+    setNewTaskDueTime('')
+    setEditingTaskId(null)
+  }
+
+  const handleOpenAddModal = () => {
+    resetTaskForm()
+    setShowAddModal(true)
+  }
+
+  const handleOpenEditModal = (task: TodoTask) => {
+    setEditingTaskId(task.id)
+    setNewTaskTitle(task.title)
+    setNewTaskDescription(task.description || '')
+    setNewTaskImportance(task.importance)
+    setNewTaskDueDate(task.dueDate || '')
+    setNewTaskDueTime(task.dueTime || '')
+    setShowAddModal(true)
+  }
+
+  const handleSaveTask = () => {
+    if (!newTaskTitle.trim()) return
+    if (editingTaskId) {
+      setTodos(prev =>
+        prev.map(task =>
+          task.id === editingTaskId
+            ? {
+                ...task,
+                title: newTaskTitle.trim(),
+                description: newTaskDescription.trim() || undefined,
+                importance: newTaskImportance,
+                dueDate: newTaskDueDate || undefined,
+                dueTime: newTaskDueTime || undefined,
+              }
+            : task
+        )
+      )
+    } else {
+      const newTask: TodoTask = {
+        id: crypto.randomUUID(),
+        title: newTaskTitle.trim(),
+        description: newTaskDescription.trim() || undefined,
+        importance: newTaskImportance,
+        dueDate: newTaskDueDate || undefined,
+        dueTime: newTaskDueTime || undefined,
+        completed: false,
+        createdAt: format(new Date(), 'yyyy-MM-dd'),
+      }
+      setTodos(prev => [...prev, newTask])
+    }
     setShowAddModal(false)
+    resetTaskForm()
   }
 
   const handleToggleComplete = (id: string) => {
@@ -82,6 +150,58 @@ const TodoList = ({ todos, setTodos }: TodoListProps) => {
     }
   }
 
+  const renderTaskCard = (task: TodoTask) => (
+    <div
+      key={task.id}
+      className="p-4 bg-white dark:bg-gray-700 rounded-xl border-l-4 border-primary-400 dark:border-primary-500 hover:shadow-md transition-all"
+    >
+      <div className="flex items-start gap-3">
+        <button
+          onClick={() => handleToggleComplete(task.id)}
+          className="mt-1 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+        >
+          <Circle size={24} />
+        </button>
+        <div className="flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200">{task.title}</h4>
+            <div className="flex items-center gap-2">
+              <span className={`px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1 ${getImportanceColor(task.importance)}`}>
+                {getImportanceIcon(task.importance)}
+                {task.importance}
+              </span>
+              <button
+                onClick={() => handleOpenEditModal(task)}
+                className="p-1 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded"
+                title="Edit task"
+              >
+                <Edit2 size={16} />
+              </button>
+              <button
+                onClick={() => handleDelete(task.id)}
+                className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          </div>
+          {task.description && (
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">{task.description}</p>
+          )}
+          {(task.dueDate || task.dueTime) && (
+            <p className="text-xs text-primary-700 dark:text-primary-300 mt-2">
+              Due {task.dueDate ? format(new Date(task.dueDate), 'MMM d, yyyy') : 'date TBD'}
+              {task.dueTime ? ` at ${task.dueTime}` : ''}
+            </p>
+          )}
+          <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+            Created {format(new Date(task.createdAt), 'MMM d, yyyy')}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+
   return (
     <div className="page-shell animate-fade-in">
       <div className="flex items-center justify-between mb-8">
@@ -92,7 +212,7 @@ const TodoList = ({ todos, setTodos }: TodoListProps) => {
           <p className="text-gray-600 dark:text-gray-300">Organize your tasks and track your progress</p>
         </div>
         <button
-          onClick={() => setShowAddModal(true)}
+          onClick={handleOpenAddModal}
           className="flex items-center gap-2 px-6 py-3 bg-primary-600 dark:bg-primary-500 text-white rounded-xl hover:bg-primary-700 dark:hover:bg-primary-600 transition-all duration-200 shadow-lg hover:shadow-xl"
         >
           <Plus size={20} />
@@ -106,45 +226,31 @@ const TodoList = ({ todos, setTodos }: TodoListProps) => {
           Active Tasks ({activeTasks.length})
         </h3>
         {activeTasks.length > 0 ? (
-          <div className="space-y-3">
-            {activeTasks.map(task => (
-              <div
-                key={task.id}
-                className="p-4 bg-white dark:bg-gray-700 rounded-xl border-l-4 border-primary-400 dark:border-primary-500 hover:shadow-md transition-all"
-              >
-                <div className="flex items-start gap-3">
-                  <button
-                    onClick={() => handleToggleComplete(task.id)}
-                    className="mt-1 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-                  >
-                    <Circle size={24} />
-                  </button>
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <h4 className="font-semibold text-gray-800 dark:text-gray-200">{task.title}</h4>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1 ${getImportanceColor(task.importance)}`}>
-                          {getImportanceIcon(task.importance)}
-                          {task.importance}
-                        </span>
-                        <button
-                          onClick={() => handleDelete(task.id)}
-                          className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                    {task.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">{task.description}</p>
-                    )}
-                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                      Created {format(new Date(task.createdAt), 'MMM d, yyyy')}
-                    </p>
-                  </div>
+          <div className="space-y-5">
+            {highPriorityTasks.length > 0 && (
+              <div>
+                <h4 className="mb-2 text-sm font-semibold text-red-700 dark:text-red-400">High Priority</h4>
+                <div className="space-y-3">
+                  {highPriorityTasks.map(renderTaskCard)}
                 </div>
               </div>
-            ))}
+            )}
+            {mediumPriorityTasks.length > 0 && (
+              <div>
+                <h4 className="mb-2 text-sm font-semibold text-yellow-700 dark:text-yellow-400">Medium Priority</h4>
+                <div className="space-y-3">
+                  {mediumPriorityTasks.map(renderTaskCard)}
+                </div>
+              </div>
+            )}
+            {lowPriorityTasks.length > 0 && (
+              <div>
+                <h4 className="mb-2 text-sm font-semibold text-green-700 dark:text-green-400">Low Priority</h4>
+                <div className="space-y-3">
+                  {lowPriorityTasks.map(renderTaskCard)}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <p className="text-gray-500 dark:text-gray-300 italic text-center py-8">
@@ -176,6 +282,13 @@ const TodoList = ({ todos, setTodos }: TodoListProps) => {
                     <div className="flex items-start justify-between gap-2">
                       <h4 className="font-semibold text-gray-600 dark:text-gray-400 line-through">{task.title}</h4>
                       <button
+                        onClick={() => handleOpenEditModal(task)}
+                        className="p-1 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded"
+                        title="Edit task"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
                         onClick={() => handleDelete(task.id)}
                         className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
                       >
@@ -184,6 +297,12 @@ const TodoList = ({ todos, setTodos }: TodoListProps) => {
                     </div>
                     {task.description && (
                       <p className="text-sm text-gray-500 dark:text-gray-500 mt-2 line-through">{task.description}</p>
+                    )}
+                    {(task.dueDate || task.dueTime) && (
+                      <p className="text-xs text-primary-700/80 dark:text-primary-300/80 mt-2">
+                        Due {task.dueDate ? format(new Date(task.dueDate), 'MMM d, yyyy') : 'date TBD'}
+                        {task.dueTime ? ` at ${task.dueTime}` : ''}
+                      </p>
                     )}
                     <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
                       Completed {task.completedAt && format(new Date(task.completedAt), 'MMM d, yyyy')}
@@ -200,7 +319,9 @@ const TodoList = ({ todos, setTodos }: TodoListProps) => {
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full animate-scale-in shadow-2xl">
-            <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">Add New Task</h3>
+            <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">
+              {editingTaskId ? 'Edit Task' : 'Add New Task'}
+            </h3>
 
             <div className="space-y-4">
               <div>
@@ -253,26 +374,49 @@ const TodoList = ({ todos, setTodos }: TodoListProps) => {
                   ))}
                 </div>
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Due Date (optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={newTaskDueDate}
+                    onChange={(e) => setNewTaskDueDate(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Due Time (optional)
+                  </label>
+                  <input
+                    type="time"
+                    value={newTaskDueTime}
+                    onChange={(e) => setNewTaskDueTime(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => {
                   setShowAddModal(false)
-                  setNewTaskTitle('')
-                  setNewTaskDescription('')
-                  setNewTaskImportance('medium')
+                  resetTaskForm()
                 }}
                 className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Cancel
               </button>
               <button
-                onClick={handleAddTask}
+                onClick={handleSaveTask}
                 disabled={!newTaskTitle.trim()}
                 className="flex-1 px-4 py-3 bg-primary-600 dark:bg-primary-500 text-white rounded-xl hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Add Task
+                {editingTaskId ? 'Save Changes' : 'Add Task'}
               </button>
             </div>
           </div>
