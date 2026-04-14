@@ -35,9 +35,6 @@ const PrivacyStrip = ({ variant = 'card' }: PrivacyStripProps) => {
           >
             Stored on this device only; clearing browser data or site storage for this app removes it.
           </p>
-          <p className="text-xs text-stone-500 dark:text-stone-400">
-            Backup / export is not available yet — it may be added in a future update.
-          </p>
         </div>
       </div>
     </div>
