@@ -16,7 +16,8 @@ import Settings from './components/Settings'
 import Sidebar from './components/Sidebar'
 import PetSelection from './components/PetSelection'
 import AIChatbot from './components/AIChatbot'
-import { MoodEntry, JournalEntry, StressEntry, AppetiteEntry, SleepEntry, TodoTask } from './types'
+import { MoodEntry, JournalEntry, StressEntry, AppetiteEntry, SleepEntry, TodoTask, ExerciseEntry } from './types'
+import ExerciseTracker from './components/ExerciseTracker'
 
 const AppContent = () => {
   const { hasSelectedPet, preferences } = usePet()
@@ -26,6 +27,7 @@ const AppContent = () => {
   const [appetiteEntries, setAppetiteEntries] = useState<AppetiteEntry[]>([])
   const [sleepEntries, setSleepEntries] = useState<SleepEntry[]>([])
   const [todos, setTodos] = useState<TodoTask[]>([])
+  const [exerciseEntries, setExerciseEntries] = useState<ExerciseEntry[]>([])
 
   // Get storage key based on pet type and name (sanitized) - memoized to prevent recreation
   const getStorageKey = useCallback((key: string) => {
@@ -48,8 +50,9 @@ const AppContent = () => {
     const appetiteKey = getStorageKey('appetiteEntries')
     const sleepKey = getStorageKey('sleepEntries')
     const todoKey = getStorageKey('todos')
+    const exerciseKey = getStorageKey('exerciseEntries')
 
-    if (!moodKey || !journalKey || !stressKey || !appetiteKey || !sleepKey || !todoKey) {
+    if (!moodKey || !journalKey || !stressKey || !appetiteKey || !sleepKey || !todoKey || !exerciseKey) {
       console.warn('Storage keys not available, skipping data load')
       return
     }
@@ -138,6 +141,20 @@ const AppContent = () => {
         }
       }
     }
+
+    if (exerciseEntries.length === 0) {
+      const savedExercise = localStorage.getItem(exerciseKey)
+      if (savedExercise) {
+        try {
+          const parsed = JSON.parse(savedExercise)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setExerciseEntries(parsed)
+          }
+        } catch (e) {
+          console.error('Error parsing exercise entries:', e)
+        }
+      }
+    }
   }, [hasSelectedPet, preferences.petType, preferences.petName]) // Only depend on these, not getStorageKey
 
   // Save mood entries to localStorage
@@ -194,6 +211,14 @@ const AppContent = () => {
     }
   }, [todos, hasSelectedPet, preferences.petType, preferences.petName, getStorageKey])
 
+  useEffect(() => {
+    if (!hasSelectedPet || !preferences.petType || !preferences.petName) return
+    const key = getStorageKey('exerciseEntries')
+    if (key) {
+      localStorage.setItem(key, JSON.stringify(exerciseEntries))
+    }
+  }, [exerciseEntries, hasSelectedPet, preferences.petType, preferences.petName, getStorageKey])
+
   if (!hasSelectedPet) {
     return <PetSelection />
   }
@@ -202,7 +227,7 @@ const AppContent = () => {
     <Router>
       <div className="flex min-h-screen">
         <Sidebar />
-        <main className="flex-1 lg:ml-64 p-4 lg:p-8 pt-16 lg:pt-8">
+        <main className="mx-auto w-full max-w-[1400px] flex-1 p-3 pt-16 lg:p-6 lg:pt-20">
           <AIChatbot />
           <Routes>
             <Route 
@@ -214,6 +239,7 @@ const AppContent = () => {
                   stressEntries={stressEntries}
                   appetiteEntries={appetiteEntries}
                   sleepEntries={sleepEntries}
+                  exerciseEntries={exerciseEntries}
                 />
               } 
             />
@@ -253,6 +279,15 @@ const AppContent = () => {
                 />
               } 
             />
+            <Route
+              path="/movement"
+              element={
+                <ExerciseTracker
+                  exerciseEntries={exerciseEntries}
+                  setExerciseEntries={setExerciseEntries}
+                />
+              }
+            />
             <Route 
               path="/tips" 
               element={
@@ -262,6 +297,7 @@ const AppContent = () => {
                   appetiteEntries={appetiteEntries}
                   sleepEntries={sleepEntries}
                   journalEntries={journalEntries}
+                  exerciseEntries={exerciseEntries}
                 />
               } 
             />
@@ -273,6 +309,7 @@ const AppContent = () => {
                   stressEntries={stressEntries}
                   sleepEntries={sleepEntries}
                   appetiteEntries={appetiteEntries}
+                  exerciseEntries={exerciseEntries}
                 />
               } 
             />
@@ -303,6 +340,7 @@ const AppContent = () => {
                   stressEntries={stressEntries}
                   appetiteEntries={appetiteEntries}
                   sleepEntries={sleepEntries}
+                  exerciseEntries={exerciseEntries}
                 />
               } 
             />
