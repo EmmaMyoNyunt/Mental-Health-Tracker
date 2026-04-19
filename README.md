@@ -1,8 +1,8 @@
 # MoodGarden
 
-A small web app for tracking how you're doing day to day - mood, stress, sleep, food, movement, journal notes, and a few extras. You pick a companion (there are several - cat, dog, rabbit, penguin, and more), give it a name, and use the app like a quiet garden you tend over time.
+A small web app for tracking how you're doing day to day - mood, stress, sleep, food, movement, journal notes, and a few extras. You pick a companion - cat, dog, rabbit, penguin, and more, give it a name, and use the app like a quiet garden you tend over time.
 
-**Important:** MoodGarden is a personal tracker, not medical advice or crisis support. If you're in danger or need urgent help, contact local emergency services or a trusted crisis line.
+MoodGarden is a personal tracker, not medical advice or crisis support.
 
 ## Privacy
 
@@ -48,7 +48,3 @@ npm run lint
 ## Tech stack
 
 React, TypeScript, Vite, Tailwind CSS, React Router, Recharts, and date-fns.
-
-## License / context
-
-Built as part of a final-year project. Feel free to learn from the code; use it responsibly if you fork or reuse it.
